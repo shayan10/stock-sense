@@ -1,25 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserRepo = exports.UserNotFound = void 0;
+exports.UserRepo = void 0;
 const Postgres_1 = require("../../db/Postgres");
-class UserNotFound extends Error {
-    constructor(message) {
-        super();
-        this.message = message;
-    }
-}
-exports.UserNotFound = UserNotFound;
+const User_1 = require("./User");
 class UserRepo {
     async find(id) {
         const user = await Postgres_1.db.selectFrom("users").select(["id", "username", "first_name",
             "last_name"]).where("id", '==', id).executeTakeFirstOrThrow((value) => {
-            return new UserNotFound("User Not Found");
+            return new User_1.UserNotFound("User Not Found");
         });
         return user;
     }
     async findByUsername(username) {
         const user = Postgres_1.db.selectFrom("users").where("username", "=", username).selectAll()
-            .executeTakeFirstOrThrow((error) => new UserNotFound("Invalid username"));
+            .executeTakeFirstOrThrow((error) => new User_1.UserNotFound("Invalid username"));
         return user;
     }
     async insert(userInfo) {

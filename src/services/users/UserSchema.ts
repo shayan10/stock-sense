@@ -8,7 +8,7 @@ z.setErrorMap(customMap);
 
 // NOTE: Accepts falsy value for validation
 const usernameSchema = z.string().max(20).refine(async (val) => {
-     const userNameTaken = await User.validateUsername(val);
+     const userNameTaken = await User.isUsernameTaken(val);
      return !userNameTaken;
 }, {
      message: "Username has been taken"

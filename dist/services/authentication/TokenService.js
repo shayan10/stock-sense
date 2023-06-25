@@ -39,20 +39,15 @@ class TokenService {
         this.tokenBlacklist = tokenBlacklist;
         this.JWT_SECRET = JWT_SECRET;
     }
-    generateToken(userId, expiryMin) {
+    generateToken(userId, expiryMin, options = {}) {
         const currTime = Math.floor(Date.now() / 1000);
-        const payload = {
-            sub: userId,
-            iat: currTime,
-            exp: currTime + (expiryMin * 60)
-        };
+        const payload = Object.assign({ sub: userId, iat: currTime, exp: currTime + (expiryMin * 60) }, options);
         return jwt.sign(payload, this.JWT_SECRET);
     }
     async verifyToken(type, token) {
         try {
             const decodedToken = jwt.verify(token, this.JWT_SECRET, {
-                ignoreExpiration: false,
-                ignoreNotBefore: false
+                ignoreExpiration: false
             });
             // Validate token
             const isValidToken = await this.tokenBlacklist.validateToken(type, token);
@@ -62,6 +57,7 @@ class TokenService {
             return decodedToken.sub;
         }
         catch (error) {
+            console.log(error);
             throw new TokenVerificationError("Invalid Token");
         }
     }

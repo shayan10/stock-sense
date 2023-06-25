@@ -10,6 +10,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const userRouter_1 = __importDefault(require("./routes/userRouter"));
 const authRouter_1 = __importDefault(require("./routes/authRouter"));
+const plaidRouter_1 = __importDefault(require("./routes/plaidRouter"));
 const authMiddleware_1 = require("./middlewares/authMiddleware");
 const app = () => {
     const _app = (0, express_1.default)();
@@ -19,6 +20,7 @@ const app = () => {
     _app.use((0, cookie_parser_1.default)());
     _app.use("/auth", authRouter_1.default);
     _app.use("/users", authMiddleware_1.authMiddleware, userRouter_1.default);
+    _app.use("/plaid", authMiddleware_1.authMiddleware, plaidRouter_1.default);
     return _app;
 };
 exports.app = app;

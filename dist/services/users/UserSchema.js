@@ -8,7 +8,7 @@ const utiils_1 = require("../../utiils");
 zod_1.z.setErrorMap(utiils_1.customMap);
 // NOTE: Accepts falsy value for validation
 const usernameSchema = zod_1.z.string().max(20).refine(async (val) => {
-    const userNameTaken = await User_1.User.validateUsername(val);
+    const userNameTaken = await User_1.User.isUsernameTaken(val);
     return !userNameTaken;
 }, {
     message: "Username has been taken"

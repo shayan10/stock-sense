@@ -21,8 +21,19 @@ router.post('/register', async (req, res) => {
     }
 });
 router.get('/', async (req, res) => {
-    const { user } = req.body;
-    res.send(user);
+    try {
+        const { user_id } = req.body;
+        const user = User_1.User.get(user_id);
+        res.send(user);
+    }
+    catch (error) {
+        if (error instanceof User_1.UserNotFound) {
+            res.status(404).send({ error: "User not found" });
+        }
+        else {
+            res.status(400).send(error);
+        }
+    }
 });
 router.patch('/', async (req, res) => {
     const { body } = req;

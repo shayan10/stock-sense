@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validate = exports.customMap = void 0;
+exports.customError = exports.validate = exports.customMap = void 0;
 const zod_1 = require("zod");
 const customMap = (issue, ctx) => {
     if (issue.code === zod_1.z.ZodIssueCode.too_big) {
@@ -22,3 +22,11 @@ const validate = async (schema, user) => {
     }
 };
 exports.validate = validate;
+function customError() {
+    return class extends Error {
+        constructor(message) {
+            super(message);
+        }
+    };
+}
+exports.customError = customError;

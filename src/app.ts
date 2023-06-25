@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import userRouter from './routes/userRouter';
 import authRouter from './routes/authRouter';
+import plaidRouter from './routes/plaidRouter';
 import {authMiddleware }from './middlewares/authMiddleware';
 
 export const app = (): express.Express => {
@@ -17,5 +18,6 @@ export const app = (): express.Express => {
 
      _app.use("/auth", authRouter);
      _app.use("/users", authMiddleware, userRouter);
+     _app.use("/plaid", authMiddleware, plaidRouter);
      return _app;
 }

@@ -10,7 +10,7 @@ export class UserNotFound extends Error {
 export class User {
      private static userRepo = new UserRepo();
 
-     static async validateUsername(username: string): Promise<boolean> {
+     static async isUsernameTaken(username: string): Promise<boolean> {
           return this.userRepo.isUsernameTaken(username);
      }
 

@@ -28,7 +28,7 @@ const app_1 = require("./app");
 const Postgres_1 = require("./db/Postgres");
 const Redis_1 = require("./db/Redis");
 dotenv.config();
-Promise.all([Redis_1.redisConnect, Postgres_1.connect]).then(() => {
+Promise.all([(0, Redis_1.redisConnect)(), (0, Postgres_1.connect)()]).then(() => {
     (0, app_1.app)().listen(process.env.PORT, () => {
         console.log(`Server started on port ${process.env.PORT}`);
     });

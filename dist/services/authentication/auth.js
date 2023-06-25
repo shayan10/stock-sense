@@ -6,7 +6,6 @@ const TokenService_1 = require("./TokenService");
 const UserRepo_1 = require("../users/UserRepo");
 const AuthRepo_1 = require("./AuthRepo");
 const AuthController_1 = require("./AuthController");
-// Initialize Token Blacklist
 if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not defined");
 }

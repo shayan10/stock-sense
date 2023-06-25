@@ -32,7 +32,7 @@ class TokenBlacklist {
         this.JWT_SECRET = JWT_SECRET;
     }
     async validateToken(type, token) {
-        return await Redis_1.redisClient.exists(`${type}-blacklist:${token}`) === 1;
+        return await Redis_1.redisClient.exists(`${type}-blacklist:${token}`) !== 1;
     }
     async revokeToken(type, token) {
         const decodedToken = jwt.verify(token, this.JWT_SECRET, {
@@ -41,9 +41,7 @@ class TokenBlacklist {
         });
         const expTime = decodedToken.exp || 0;
         const remainingTime = expTime - Math.floor(Date.now() / 1000);
-        await Redis_1.redisClient.set(`${type}-blacklist`, token, {
-            EX: remainingTime
-        });
+        await Redis_1.redisClient.set(`${type}-blacklist`, token, "PXAT", remainingTime);
     }
     async saveTokenPair(accessToken, refreshToken, userId) {
         await Postgres_1.db.insertInto("tokens").values({
@@ -53,10 +51,10 @@ class TokenBlacklist {
         }).execute();
     }
     async removeTokenPair(refreshToken) {
-        await Postgres_1.db.deleteFrom("tokens").where("refresh_token", '==', refreshToken).execute();
+        await Postgres_1.db.deleteFrom("tokens").where("refresh_token", '=', refreshToken).execute();
     }
     async getAccessToken(refreshToken) {
-        const result = await Postgres_1.db.selectFrom("tokens").where("refresh_token", "==", refreshToken).select("access_token").executeTakeFirst();
+        const result = await Postgres_1.db.selectFrom("tokens").where("refresh_token", "=", refreshToken).select("access_token").executeTakeFirst();
         return result === null || result === void 0 ? void 0 : result.access_token;
     }
 }
