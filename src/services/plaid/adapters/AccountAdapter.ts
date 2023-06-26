@@ -34,19 +34,6 @@ class AccountAdapter {
 		return accounts;
 	}
 
-	// private transformData(
-	// 	data: { id: number; plaid_account_id: string }[]
-	// ): AccountMap {
-	// 	const map: AccountMap = new Map<string, number>();
-	// 	data.forEach((obj) => {
-	// 		console.log("Obj id" + obj.plaid_account_id);
-	// 		console.log("Obj ID: " + obj.id);
-	// 		map.set(obj.plaid_account_id, obj.id);
-	// 		console.log("Map value:" + map.get(obj.plaid_account_id));
-	// 	});
-	// 	return map;
-	// }
-
 	async saveAccounts(
 		user_id: string,
 		data: AccountBase[]

@@ -49,8 +49,6 @@ router.get("/initialize", async (req: Request, res: Response) => {
 			result.access_token
 		);
 
-		console.log(investments.securities);
-
 		const accountMap = await accountAdapter.saveAccounts(
 			user_id.toString(),
 			investments.accounts

@@ -66,12 +66,8 @@ class HoldingAdapter {
 		const holdings: HoldingPayload[] = [];
 		data.forEach((holding: Holding) => {
 			const account_id = accountMap.get(holding.account_id);
-			console.log("Account ID: " + account_id);
 			const ticker_symbol = securityMap.get(holding.security_id);
-			console.log("Ticker Symbol: " + ticker_symbol);
 			const { quantity, cost_basis } = holding;
-			console.log("Quantity: " + quantity);
-			console.log("Cost Basis: " + cost_basis);
 
 			if (account_id && ticker_symbol && quantity && cost_basis) {
 				holdings.push({
@@ -92,15 +88,12 @@ class HoldingAdapter {
 		accountMap: AccountMap
 	) {
 		const securityMap = this.parseSecurities(securities);
-		console.log("Security Map: " + securities.length);
 
 		const parsedHoldings = this.parseHoldings(
 			holdings,
 			securityMap,
 			accountMap
 		);
-
-		console.log(parsedHoldings);
 
 		if (parsedHoldings.length == 0) {
 			return [];
