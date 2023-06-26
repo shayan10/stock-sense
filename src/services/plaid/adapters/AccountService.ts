@@ -1,6 +1,6 @@
 import { AccountBase } from "plaid";
-import { AccountPayload } from "./AccountSchema";
-import { AccountRepo } from "./AccountRepo";
+import { AccountPayload } from "../../accounts/AccountSchema";
+import { AccountRepo } from "../../accounts/AccountRepo";
 
 interface IAccountRepo {
 	insert(
@@ -16,7 +16,7 @@ interface IAccountRepo {
 
 type AccountMap = Map<string, number>;
 
-class AccountService {
+class AccountAdapter {
 	constructor(private accountRepo: IAccountRepo) {}
 
 	private parseAccountData(data: AccountBase[]): AccountPayload[] {
@@ -46,7 +46,6 @@ class AccountService {
 
 	async saveAccounts(user_id: string, data: AccountBase[]) {
 		const parsedAccounts: AccountPayload[] = this.parseAccountData(data);
-		// TODO: Insert accounts using account repo
 		const result = await this.accountRepo.insert(
 			parseInt(user_id),
 			parsedAccounts
@@ -55,4 +54,4 @@ class AccountService {
 	}
 }
 
-export default new AccountService(new AccountRepo());
+export default new AccountAdapter(new AccountRepo());

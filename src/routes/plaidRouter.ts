@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import plaidService from "../services/plaid/PlaidService";
-import accountService from "../services/accounts/AccountService";
+import accountAdapter from "../services/plaid/adapters/AccountService";
 import { db } from "../db/Postgres";
 
 const router = Router();
@@ -47,7 +47,7 @@ router.get("/initialize", async (req: Request, res: Response) => {
 		const investments = await plaidService.getInvestments(
 			result.access_token
 		);
-		accountService.saveAccounts(user_id.toString(), investments.accounts);
+		accountAdapter.saveAccounts(user_id.toString(), investments.accounts);
 		res.status(201).send();
 	} catch (error) {
 		res.status(400).send(error);

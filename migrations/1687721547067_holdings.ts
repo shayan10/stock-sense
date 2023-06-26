@@ -9,9 +9,9 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 			id SERIAL PRIMARY KEY,
 			user_id INTEGER REFERENCES users(id) NOT NULL,
 			account_id INTEGER REFERENCES accounts(id) NOT NULL,
-			ticker_symbol VARCHAR,
-			quantity DECIMAL (20, 8),
-			cost_basis DECIMAL (20, 8)
+			ticker_symbol VARCHAR NOT NULL,
+			quantity DECIMAL (20, 8) NOT NULL,
+			cost_basis DECIMAL (20, 8) NOT NULL
 		);
 	`);
 }
