@@ -14,7 +14,7 @@ interface IAccountRepo {
 	>;
 }
 
-type AccountMap = Map<string, number>;
+export type AccountMap = Map<string, number>;
 
 class AccountAdapter {
 	constructor(private accountRepo: IAccountRepo) {}
@@ -23,10 +23,10 @@ class AccountAdapter {
 		const accounts: AccountPayload[] = [];
 
 		data.forEach((account: AccountBase) => {
-			if (account.account_id && account.official_name) {
+			if (account.account_id && account.name) {
 				accounts.push({
 					plaid_account_id: account.account_id,
-					account_name: account.official_name,
+					account_name: account.name,
 				});
 			}
 		});
@@ -34,23 +34,35 @@ class AccountAdapter {
 		return accounts;
 	}
 
-	private transformData(
-		data: { id: number; plaid_account_id: string }[]
-	): AccountMap {
-		const map = new Map();
-		data.forEach((obj) => {
-			map.set(obj.plaid_account_id, obj.id);
-		});
-		return map;
-	}
+	// private transformData(
+	// 	data: { id: number; plaid_account_id: string }[]
+	// ): AccountMap {
+	// 	const map: AccountMap = new Map<string, number>();
+	// 	data.forEach((obj) => {
+	// 		console.log("Obj id" + obj.plaid_account_id);
+	// 		console.log("Obj ID: " + obj.id);
+	// 		map.set(obj.plaid_account_id, obj.id);
+	// 		console.log("Map value:" + map.get(obj.plaid_account_id));
+	// 	});
+	// 	return map;
+	// }
 
-	async saveAccounts(user_id: string, data: AccountBase[]) {
+	async saveAccounts(
+		user_id: string,
+		data: AccountBase[]
+	): Promise<AccountMap> {
 		const parsedAccounts: AccountPayload[] = this.parseAccountData(data);
 		const result = await this.accountRepo.insert(
 			parseInt(user_id),
 			parsedAccounts
 		);
-		return this.transformData(result);
+
+		const map: AccountMap = new Map<string, number>();
+		result.forEach((obj) => {
+			map.set(obj.plaid_account_id, obj.id);
+		});
+
+		return map;
 	}
 }
 

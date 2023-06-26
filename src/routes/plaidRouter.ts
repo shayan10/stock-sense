@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import plaidService from "../services/plaid/PlaidService";
-import accountAdapter from "../services/plaid/adapters/AccountService";
+import accountAdapter from "../services/plaid/adapters/AccountAdapter";
+import holdingAdapter from "../services/plaid/adapters/HoldingsAdapter";
 import { db } from "../db/Postgres";
 
 const router = Router();
@@ -47,9 +48,23 @@ router.get("/initialize", async (req: Request, res: Response) => {
 		const investments = await plaidService.getInvestments(
 			result.access_token
 		);
-		accountAdapter.saveAccounts(user_id.toString(), investments.accounts);
-		res.status(201).send();
+
+		console.log(investments.securities);
+
+		const accountMap = await accountAdapter.saveAccounts(
+			user_id.toString(),
+			investments.accounts
+		);
+		const holdings = await holdingAdapter.saveHoldings(
+			user_id,
+			investments.holdings,
+			investments.securities,
+			accountMap
+		);
+
+		res.status(201).send({ holdings });
 	} catch (error) {
+		console.log(error);
 		res.status(400).send(error);
 	}
 });

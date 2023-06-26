@@ -7,6 +7,9 @@ import {
 	SandboxPublicTokenCreateRequest,
 	ItemPublicTokenExchangeRequest,
 	InvestmentsHoldingsGetRequest,
+	AccountBase,
+	Holding,
+	Security,
 } from "plaid";
 
 import { db } from "../../db/Postgres";
@@ -99,7 +102,11 @@ class PlaidService {
 			.execute();
 	}
 
-	async getInvestments(accessToken: string) {
+	async getInvestments(accessToken: string): Promise<{
+		accounts: AccountBase[];
+		holdings: Holding[];
+		securities: Security[];
+	}> {
 		try {
 			const request: InvestmentsHoldingsGetRequest = {
 				access_token: accessToken,
