@@ -40,6 +40,7 @@ class PlaidService {
 				},
 			};
 
+			// TODO: Change this to fetch the access token from the DB and be in update mode
 			if (access_token) {
 				request["access_token"] = access_token;
 			}
