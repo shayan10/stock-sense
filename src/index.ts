@@ -3,58 +3,42 @@ import * as dotenv from "dotenv";
 import { app } from "./app";
 import { connect } from "./db/Postgres";
 import { redisConnect } from "./db/Redis";
-
-import { WebSocketServer } from "ws";
+import { Server, Socket } from "socket.io";
+import { createServer } from "http";
 import { socketAuthMiddleware } from "./middlewares/authMiddleware";
+import plaidHandler from "./socket/handlers/plaidHandler";
 
 dotenv.config();
 
 Promise.all([redisConnect(), connect()])
 	.then(() => {
-		const httpServer = app();
+		const httpServer = createServer(app());
 
-		const wss = new WebSocketServer({
-			noServer: true,
-			path: "/plaid-ws/",
+		const io = new Server(httpServer, {
+			cors: {
+				origin: "*",
+				methods: ["*"],
+				credentials: true,
+			},
+			transports: ["polling", "websocket"],
+			allowUpgrades: true,
 		});
 
-		wss.on("connection", function connection(ws) {
-			ws.on("error", console.error);
+		io.use((socket, next) => {
+			socketAuthMiddleware(socket, next).catch((error) => {
+				socket.disconnect();
+				return;
+			});
+		});
 
-			ws.on("message", function message(data) {
+		io.on("connection", (socket: Socket) => {
+			// socket.emit("Hello", "World");
+			console.log("New WebSocket connection");
+			plaidHandler(io, socket);
+
+			socket.on("message", (data: any) => {
 				console.log("received: %s", data);
 			});
-
-			ws.send("something");
-		});
-
-		httpServer.on("upgrade", function upgrade(request, socket, head) {
-			console.log("Upgraded");
-
-			const onSocketError = () => {
-				console.log("error");
-			};
-
-			socket.on("error", onSocketError);
-
-			socketAuthMiddleware(request)
-				.then(() => {
-					socket.removeListener("error", onSocketError);
-					// This function is not defined on purpose. Implement it with your own logic.
-					wss.handleUpgrade(
-						request,
-						socket,
-						head,
-						function done(ws) {
-							wss.emit("connection", ws, request);
-						}
-					);
-				})
-				.catch((error) => {
-					socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
-					socket.destroy();
-					return;
-				});
 		});
 
 		httpServer.listen(process.env.PORT, () => {

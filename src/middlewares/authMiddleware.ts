@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../services/authentication/auth";
 import { TokenVerificationError } from "../services/authentication/TokenService";
-import { IncomingMessage } from "http";
+import { Socket } from "socket.io";
 
 export const authMiddleware = async (
 	req: Request,
@@ -30,11 +30,13 @@ export const authMiddleware = async (
 	}
 };
 
-export const socketAuthMiddleware = async (request: IncomingMessage) => {
+export const socketAuthMiddleware = async (socket: Socket, next: any) => {
 	try {
-		const accessToken = request.headers.authorization as string;
+		const accessToken = socket.handshake.auth.token as string;
+		console.log(accessToken);
 		const userId = await tokenService.verifyAccessToken(accessToken);
-		request.headers.userId = userId;
+		socket.handshake.headers.userId = userId;
+		next();
 	} catch (error) {
 		throw error;
 	}

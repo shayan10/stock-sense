@@ -2,7 +2,6 @@ import express from "express";
 import helmet from "helmet";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import { createServer } from "http";
 
 import userRouter from "./routes/userRouter";
 import authRouter from "./routes/authRouter";
@@ -21,6 +20,5 @@ export const app = () => {
 	_app.use("/users", authMiddleware, userRouter);
 	_app.use("/plaid", authMiddleware, plaidRouter);
 
-	const server = createServer(_app);
-	return server;
+	return _app;
 };
