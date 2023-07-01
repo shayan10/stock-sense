@@ -1,46 +1,11 @@
 import * as dotenv from "dotenv";
-// import { Socket } from "socket.io";
 
 import { app } from "./app";
 import { connect } from "./db/Postgres";
 import { redisConnect } from "./db/Redis";
-// import {
-// 	ClientToServerEvents,
-// 	ServerToClientEvents,
-// 	InterServerEvents,
-// 	SocketData,
-// } from "./socket/socket";
-// import { Server } from "socket.io";
+
 import { WebSocketServer } from "ws";
-
-// import plaidHandler from "./socket/handlers/plaidHandler";
-// import { socketAuthMiddleware } from "./middlewares/authMiddleware";
-
-// const io = new Server<
-// 	ClientToServerEvents,
-// 	ServerToClientEvents,
-// 	InterServerEvents,
-// 	SocketData
-// >({
-// 	cors: {
-// 		origin: "http://localhost:3030",
-// 		methods: ["GET", "POST"],
-// 		credentials: true,
-// 	},
-// 	allowEIO3: true,
-// 	allowUpgrades: true,
-// });
-
-// // const onConnection = (socket: Socket) => {
-// // 	return plaidHandler(io, socket);
-// // };
-
-// io.on("connection", (socket: Socket) => {
-// 	socket.emit("Hello", "World");
-// 	// onConnection(socket);
-// });
-
-// io.listen(3030);
+import { socketAuthMiddleware } from "./middlewares/authMiddleware";
 
 dotenv.config();
 
@@ -64,17 +29,34 @@ Promise.all([redisConnect(), connect()])
 		});
 
 		httpServer.on("upgrade", function upgrade(request, socket, head) {
-			socket.on("error", () => {
-				console.log("error");
-			});
+			console.log("Upgraded");
 
-			// This function is not defined on purpose. Implement it with your own logic.
-			wss.handleUpgrade(request, socket, head, function done(ws) {
-				wss.emit("connection", ws, request);
-			});
+			const onSocketError = () => {
+				console.log("error");
+			};
+
+			socket.on("error", onSocketError);
+
+			socketAuthMiddleware(request)
+				.then(() => {
+					socket.removeListener("error", onSocketError);
+					// This function is not defined on purpose. Implement it with your own logic.
+					wss.handleUpgrade(
+						request,
+						socket,
+						head,
+						function done(ws) {
+							wss.emit("connection", ws, request);
+						}
+					);
+				})
+				.catch((error) => {
+					socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+					socket.destroy();
+					return;
+				});
 		});
 
-		// io.use((socket, next) => socketAuthMiddleware(socket, next));
 		httpServer.listen(process.env.PORT, () => {
 			console.log(`Server started on port ${process.env.PORT}`);
 		});

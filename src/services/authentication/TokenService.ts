@@ -45,10 +45,11 @@ export class TokenService {
 			});
 
 			// Validate token
-			const isValidToken = await this.tokenBlacklist.validateToken(
-				type,
-				token
-			);
+			const isValidToken =
+				token ||
+				(await this.tokenBlacklist.validateToken(type, token));
+
+			console.log(isValidToken);
 
 			if (!isValidToken || !decodedToken["sub"]) {
 				throw new TokenVerificationError("Invalid Token");
