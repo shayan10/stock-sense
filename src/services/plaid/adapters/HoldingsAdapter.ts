@@ -11,8 +11,8 @@ interface IHoldingRepo {
 		{
 			account_id: number;
 			ticker_symbol: string;
-			quantity: string;
-			cost_basis: string;
+			quantity: number;
+			cost_basis: number;
 		}[]
 	>;
 }
@@ -72,6 +72,7 @@ class HoldingAdapter {
 			if (account_id && ticker_symbol && quantity && cost_basis) {
 				holdings.push({
 					account_id,
+					plaid_account_id: holding.account_id,
 					ticker_symbol,
 					cost_basis,
 					quantity,
