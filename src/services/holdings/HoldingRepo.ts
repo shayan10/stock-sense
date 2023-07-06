@@ -1,7 +1,7 @@
 import { db } from "../../db/Postgres";
 import { HoldingPayload } from "./HoldingSchema";
 
-interface HoldingPublicResponse {
+export interface HoldingPublicResponse {
 	id: number;
 	user_id: number;
 	account_id: number;
@@ -38,20 +38,23 @@ export class HoldingRepo {
 		user_id: number,
 		account_id: number
 	): Promise<HoldingPublicResponse[]> {
-		const results = await db
-			.selectFrom("holdings")
+		const result = await db
+			.selectFrom("accounts")
+			.where("accounts.user_id", "=", user_id)
+			.where("accounts.id", "=", account_id)
+			.innerJoin("holdings as h", "account_id", "h.account_id")
 			.select([
-				"id",
-				"user_id",
-				"account_id",
-				"cost_basis",
-				"quantity",
-				"ticker_symbol",
+				"h.id",
+				"h.account_id",
+				"h.cost_basis",
+				"h.ticker_symbol",
+				"h.quantity",
+				"h.cost_basis",
+				"h.user_id",
 			])
-			.where("account_id", "=", account_id)
-			.where("user_id", "=", user_id)
 			.execute();
-
-		return results;
+		return result;
 	}
 }
+
+export const holdingRepo = new HoldingRepo();

@@ -6,6 +6,9 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRouter";
 import authRouter from "./routes/authRouter";
 import plaidRouter from "./routes/plaidRouter";
+import accountRouter from "./routes/accountRouter";
+import holdingRouter from "./routes/holdingRouter";
+
 import { authMiddleware } from "./middlewares/authMiddleware";
 
 export const app = () => {
@@ -19,6 +22,7 @@ export const app = () => {
 	_app.use("/auth", authRouter);
 	_app.use("/users", authMiddleware, userRouter);
 	_app.use("/plaid", authMiddleware, plaidRouter);
-
+	_app.use("/account", authMiddleware, accountRouter);
+	_app.use("/holding", authMiddleware, holdingRouter);
 	return _app;
 };

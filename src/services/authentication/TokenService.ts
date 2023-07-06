@@ -41,7 +41,7 @@ export class TokenService {
 	): Promise<string> {
 		try {
 			const decodedToken = jwt.verify(token, this.JWT_SECRET, {
-				ignoreExpiration: false,
+				ignoreExpiration: true,
 			});
 
 			// Validate token

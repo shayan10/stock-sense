@@ -1,7 +1,6 @@
 import { db } from "../../db/Postgres";
 import { AccountPayload } from "./AccountSchema";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-
 export class AccountRepo {
 	async insert(user_id: number, data: AccountPayload[]) {
 		const accounts = data.map((account: AccountPayload) => {
@@ -22,7 +21,7 @@ export class AccountRepo {
 	async get(user_id: number) {
 		const results = await db
 			.selectFrom("accounts")
-			.select(["id", "account_name"])
+			.select(["accounts.id", "accounts.account_name"])
 			.select((eb) => {
 				return jsonArrayFrom(
 					eb
@@ -37,8 +36,20 @@ export class AccountRepo {
 						.limit(5)
 				).as("holdings");
 			})
-			.where("accounts.user_id", "=", user_id)
+			.innerJoin(
+				db
+					.selectFrom("holdings")
+					.select(["holdings.account_id"])
+					.where("user_id", "=", user_id)
+					.groupBy("account_id")
+					.having((eb) => eb.fn.count("id"), ">=", 1)
+					.as("h"),
+				"accounts.id",
+				"h.account_id"
+			)
 			.execute();
 		return results;
 	}
 }
+
+export const accountRepo = new AccountRepo();

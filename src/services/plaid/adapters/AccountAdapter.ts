@@ -1,6 +1,6 @@
 import { AccountBase } from "plaid";
 import { AccountPayload } from "../../accounts/AccountSchema";
-import { AccountRepo } from "../../accounts/AccountRepo";
+import { accountRepo } from "../../accounts/AccountRepo";
 
 interface IAccountRepo {
 	insert(
@@ -53,4 +53,4 @@ class AccountAdapter {
 	}
 }
 
-export default new AccountAdapter(new AccountRepo());
+export default new AccountAdapter(accountRepo);
