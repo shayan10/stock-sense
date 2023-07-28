@@ -11,15 +11,16 @@ export const authMiddleware = async (
 	try {
 		const { authorization } = req.headers;
 
-		const userId = authorization
-			? await tokenService.verifyAccessToken(authorization)
-			: undefined;
+		if (!authorization) {
+			throw new TokenVerificationError("Token not received");
+		}
 
+		const userId = await tokenService.verifyAccessToken(authorization);
+		console.log(userId);
 		req.body["user_id"] = userId;
 		next();
 	} catch (error) {
 		// Handle any errors that occur during the middleware execution
-		console.log(error);
 		if (error instanceof TokenVerificationError) {
 			res.status(401).send({ message: "Invalid Token" });
 		} else {

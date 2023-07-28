@@ -1,0 +1,93 @@
+* {
+	padding: 0px;
+}
+body {
+	position: relative;
+	min-height: 100vh;
+	padding-bottom: 80px; /* Adjust the padding to match the height of the footer */
+	/* background-color: rgba(141, 141, 141, 0.1); */
+}
+
+.footer {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
+
+.footer > div > p {
+	color: white;
+}
+
+.graph {
+	width: 100%;
+	height: auto;
+	margin: 0px;
+}
+
+.news-card {
+	display: flex;
+	justify-content: space-around;
+	border-top: 1px solid grey;
+	padding: 20px 0;
+}
+
+.news-card-img {
+	margin: auto 0;
+	max-width: 225px;
+}
+
+.news-card-body {
+	font-weight: bold;
+	text-overflow: ellipsis;
+	margin: 5 auto;
+	padding: 0.5em;
+}
+
+.news {
+	max-height: 680px;
+	overflow-y: auto;
+}
+
+.news::-webkit-scrollbar {
+	width: 8px; /* Adjust the width as per your preference */
+}
+
+.news::-webkit-scrollbar-track {
+	background: #f1f1f1; /* Background color of the track */
+}
+
+.news::-webkit-scrollbar-thumb {
+	background: #888; /* Color of the scroll thumb */
+	border-radius: 4px; /* Rounded ends of the scroll thumb */
+}
+
+.news::-webkit-scrollbar-thumb:hover {
+	background: #555; /* Color of the scroll thumb on hover */
+}
+
+.details-row > p {
+	display: inline;
+}
+
+.position-detail {
+	border: 1px solid grey;
+	border-radius: 10px;
+	padding: 25px;
+	background-color: rgba(19, 19, 19, 0.9);
+	color: white;
+}
+
+.position-stats {
+	text-align: center;
+}
+
+.search-bar input,
+.search-bar button {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.account-info > p {
+	display: inline;
+	margin-right: 10px;
+}

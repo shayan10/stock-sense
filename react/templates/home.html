@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="../css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../css/styles.css" />
+
+		<title>StockSense</title>
+	</head>
+	<body>
+		<!-- Option 1: Bootstrap Bundle with Popper -->
+		<script src="js/bootstrap.bundle.min.js"></script>
+
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<div class="container-xl">
+				<a class="navbar-brand" href="#">StockSense</a>
+				<button
+					class="navbar-toggler"
+					type="button"
+					data-bs-toggle="collapse"
+					data-bs-target="#navbarSupportedContent"
+					aria-controls="navbarSupportedContent"
+					aria-expanded="false"
+					aria-label="Toggle navigation"
+				>
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div
+					class="collapse navbar-collapse d-xl-flex justify-content-between"
+					id="navbarSupportedContent"
+				>
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						<li class="nav-item">
+							<a href="#" class="nav-link active">Home</a>
+						</li>
+						<li class="nav-item">
+							<a href="#" class="nav-link active"
+								>Profile</a
+							>
+						</li>
+					</ul>
+					<div class="nav-item end-0">
+						<a
+							href="#"
+							class="text-white text-decoration-none"
+							>Logout</a
+						>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container mt-3">
+			<section class="input-group mt-2 mb-4 search-bar">
+				<input
+					type="text"
+					class="form-control"
+					placeholder="Ticker Symbol (e.g. MSFT)"
+				/>
+				<button type="submit" class="btn btn-outline-success">
+					Search
+				</button>
+			</section>
+
+			<section id="performance" class="my-3">
+				<div class="d-flex justify-content-center gap-5 text-wrap">
+					<p class="fs-4 fw-normal">
+						<span class="text-success">+12.32%</span> Today
+					</p>
+					<!-- <p class="fs-4 fw-normal">
+						<span class="text-danger">-12.32%</span> YTD
+					</p> -->
+					<p class="fs-4 fw-normal">
+						<span class="text-secondary">0.00%</span> P/L
+					</p>
+				</div>
+			</section>
+
+			<section id="accounts" class="my-3">
+				<div class="d-flex justify-content-between">
+					<h2>Holdings</h2>
+					<button class="btn btn-primary" style="height: 2.5em">
+						Refresh
+					</button>
+				</div>
+				<hr />
+				<div id="jp-morgan">
+					<h5>JP Morgan</h5>
+					<table class="table table-hover table-striped">
+						<thead>
+							<tr>
+								<th scope="col">Ticker Symbol</th>
+								<th scope="col">Qty.</th>
+								<th scope="col">Cost Basis</th>
+								<th scope="col">Current Price</th>
+								<th scope="col">Today's Change</th>
+
+								<th scope="col">Profit/Loss</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th scope="row" class="">MSFT</th>
+								<td>2.00</td>
+								<td>$2.34</td>
+								<td>
+									<span class="text-danger"
+										>$2.50</span
+									>
+								</td>
+								<td>
+									<span class="text-danger"
+										>-2.50 %</span
+									>
+								</td>
+								<td>
+									<span class="text-danger"
+										>-2.50 %</span
+									>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row" class="">APPL</th>
+								<td>2.00</td>
+								<td>$149.32</td>
+								<td>
+									<span class="text-success"
+										>$180.58</span
+									>
+								</td>
+								<td>
+									<span class="text-success"
+										>+10.50 %</span
+									>
+								</td>
+								<td>
+									<span class="text-success"
+										>+10.50 %</span
+									>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row" class="">APPL</th>
+								<td>2.00</td>
+								<td>$149.32</td>
+								<td>
+									<span class="text-success"
+										>$180.58</span
+									>
+								</td>
+								<td>
+									<span class="text-success"
+										>+10.50 %</span
+									>
+								</td>
+								<td>
+									<span class="text-success"
+										>+10.50 %</span
+									>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row" class="">MSFT</th>
+								<td>2.00</td>
+								<td>$2.34</td>
+								<td>
+									<span class="text-danger"
+										>$2.50</span
+									>
+								</td>
+								<td>
+									<span class="text-danger"
+										>-2.50 %</span
+									>
+								</td>
+								<td>
+									<span class="text-danger"
+										>-2.50 %</span
+									>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="d-flex justify-content-between">
+						<div class="account-info">
+							<p class="fw-bold">
+								Today's P/L:
+								<span class="text-success"
+									>+$34.20</span
+								>
+							</p>
+							<p class="fw-bold">
+								Total P/L:
+								<span class="text-success"
+									>+$34.20</span
+								>
+							</p>
+						</div>
+
+						<nav>
+							<ul
+								class="pagination pagination-sm justify-content-end"
+							>
+								<li
+									class="page-item active"
+									aria-current="page"
+								>
+									<span class="page-link">1</span>
+								</li>
+								<li class="page-item">
+									<a class="page-link" href="#">2</a>
+								</li>
+								<li class="page-item">
+									<a class="page-link" href="#">3</a>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</section>
+
+			<section class="footer bg-dark text-white-50 p-2">
+				<div class="d-flex justify-content-around">
+					<p>Created by Shayan Khan</p>
+					<p>&copy 2023</p>
+				</div>
+			</section>
+		</div>
+	</body>
+</html>

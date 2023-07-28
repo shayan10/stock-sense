@@ -1,13 +1,28 @@
+import { sql } from "kysely";
 import { db } from "../../db/Postgres";
 import { HoldingPayload } from "./HoldingSchema";
 
 export interface HoldingPublicResponse {
 	id: number;
-	user_id: number;
-	account_id: number;
 	cost_basis: number;
 	quantity: number;
 	ticker_symbol: string;
+}
+
+export interface HoldingInfo {
+	ticker_symbols: string[];
+	total_cost: number;
+}
+
+export interface PositionInfo {
+	ticker_symbol: string;
+	position_size: number;
+	positon_cost: number;
+}
+
+export interface PaginationOptions {
+	limit?: number;
+	offset?: number;
 }
 
 export class HoldingRepo {
@@ -34,26 +49,44 @@ export class HoldingRepo {
 		return results;
 	}
 
-	async get(
+	async getMany(
 		user_id: number,
-		account_id: number
+		account_id: number,
+		paginationOptions: PaginationOptions = {
+			limit: 5,
+			offset: 0,
+		}
 	): Promise<HoldingPublicResponse[]> {
+		const { limit = 5, offset = 0 } = paginationOptions;
+
 		const result = await db
-			.selectFrom("accounts")
-			.where("accounts.user_id", "=", user_id)
-			.where("accounts.id", "=", account_id)
-			.innerJoin("holdings as h", "account_id", "h.account_id")
-			.select([
-				"h.id",
-				"h.account_id",
-				"h.cost_basis",
-				"h.ticker_symbol",
-				"h.quantity",
-				"h.cost_basis",
-				"h.user_id",
-			])
+			.selectFrom("holdings")
+			.select(["id", "ticker_symbol", "cost_basis", "quantity"])
+			.where("user_id", "=", user_id)
+			.where("account_id", "=", account_id)
+			.limit(limit)
+			.offset(offset)
 			.execute();
 		return result;
+	}
+
+	async get(
+		user_id: number,
+		holding_id: number
+	): Promise<HoldingPublicResponse | undefined> {
+		const result = await db
+			.selectFrom("holdings")
+			.where("user_id", "=", user_id)
+			.where("id", "=", holding_id)
+			.select(["id", "cost_basis", "ticker_symbol", "quantity"])
+			.executeTakeFirst();
+		return result;
+	}
+
+	async getPositions(user_id: number): Promise<PositionInfo[]> {
+		const query = sql<PositionInfo>`SELECT ticker_symbol, SUM(quantity) as position_size, SUM(quantity*cost_basis) AS position_cost FROM holdings WHERE user_id=${user_id} GROUP BY ticker_symbol;`;
+		const result = await query.execute(db);
+		return result.rows;
 	}
 }
 

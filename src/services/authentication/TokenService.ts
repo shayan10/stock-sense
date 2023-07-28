@@ -49,15 +49,12 @@ export class TokenService {
 				token ||
 				(await this.tokenBlacklist.validateToken(type, token));
 
-			console.log(isValidToken);
-
 			if (!isValidToken || !decodedToken["sub"]) {
 				throw new TokenVerificationError("Invalid Token");
 			}
 
 			return decodedToken.sub as string;
 		} catch (error) {
-			console.log(error);
 			throw new TokenVerificationError("Invalid Token");
 		}
 	}
@@ -92,7 +89,6 @@ export class TokenService {
 			// Remove from DB
 			this.tokenBlacklist.removeTokenPair(refreshToken);
 		} catch (error) {
-			console.log(error);
 			throw new TokenVerificationError("Invalid Token");
 		}
 	}

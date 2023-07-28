@@ -27,7 +27,6 @@ class HoldingAdapter {
 			"cash",
 			"etf",
 			"equity",
-			"mutual fund",
 			"fixed income",
 			"cryptocurrency",
 		].includes(type);
