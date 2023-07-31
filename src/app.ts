@@ -20,7 +20,7 @@ export const app = () => {
 	_app.use(cookieParser());
 
 	_app.use("/auth", authRouter);
-	_app.use("/users", authMiddleware, userRouter);
+	_app.use("/users", userRouter);
 	_app.use("/plaid", authMiddleware, plaidRouter);
 	_app.use("/account", authMiddleware, accountRouter);
 	_app.use("/holdings", authMiddleware, holdingRouter);

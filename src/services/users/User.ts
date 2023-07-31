@@ -25,7 +25,7 @@ export class User {
 	static async update(
 		id: number,
 		userInfo: UserUpdatePayload
-	): Promise<undefined | UserResponse> {
+	): Promise<void> {
 		return this.userRepo.update(id, userInfo);
 	}
 }

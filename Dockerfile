@@ -20,4 +20,4 @@ COPY entrypoint.sh /app
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Run the command to start your application
-CMD ["npm", "run", "build"]
+CMD ["npm", "run", "test"]

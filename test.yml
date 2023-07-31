@@ -1,0 +1,16 @@
+version: "3"
+services:
+     db:
+          image: "postgres:9.4"
+          restart: always
+          env_file:
+               - .env
+          volumes:
+               - ./docker/test/postgres-data:/var/lib/postgresql/data
+          ports:
+               - "5432:5432"
+     redis:
+          image: redis:latest
+          restart: always
+          ports:
+               - "6379:6379"

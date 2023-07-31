@@ -11,12 +11,14 @@
     "migrate:up": "ts-node node_modules/.bin/node-pg-migrate -j ts up",
     "migrate:down": "ts-node node_modules/.bin/node-pg-migrate down -j ts",
     "migrate:reset": "ts-node node_modules/.bin/node-pg-migrate reset -j ts",
-    "generate:types": "kysely-codegen"
+    "generate:types": "kysely-codegen",
+    "test": "npx jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.17",
@@ -51,8 +53,14 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "concurrently": "^8.0.1",
+    "@types/jest": "^29.5.3",
+    "@types/supertest": "^2.0.12",
+    "concurrently": "^8.2.0",
+    "faker": "^6.6.6",
+    "jest": "^29.6.2",
     "nodemon": "^2.0.22",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1"
   }
 }

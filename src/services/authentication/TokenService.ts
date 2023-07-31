@@ -1,6 +1,7 @@
 import * as jwt from "jsonwebtoken";
 import { TokenPair } from "./AuthController";
 import { TokenBlacklist } from "./TokenBlacklist";
+import { createHash } from "crypto";
 
 export type TokenType = "access" | "refresh";
 
@@ -21,6 +22,7 @@ export class TokenService {
 	private generateToken(
 		userId: string,
 		expiryMin: number,
+		type: TokenType,
 		options: object = {}
 	): string {
 		const currTime = Math.floor(Date.now() / 1000);
@@ -29,6 +31,9 @@ export class TokenService {
 			sub: userId,
 			iat: currTime,
 			exp: currTime + expiryMin * 60,
+			aud: createHash("sha256")
+				.update(`${currTime}+${type}`)
+				.digest("hex"),
 			...options,
 		};
 
@@ -39,17 +44,46 @@ export class TokenService {
 		type: TokenType,
 		token: string
 	): Promise<string> {
+		let decodedToken: jwt.JwtPayload;
 		try {
-			const decodedToken = jwt.verify(token, this.JWT_SECRET, {
-				ignoreExpiration: true,
-			});
+			decodedToken = jwt.verify(token, this.JWT_SECRET, {
+				ignoreExpiration: false,
+				ignoreNotBefore: false,
+				allowInvalidAsymmetricKeyTypes: false,
+			}) as jwt.JwtPayload;
 
+			if (
+				!decodedToken["sub"] ||
+				!decodedToken["iat"] ||
+				!decodedToken["exp"] ||
+				!decodedToken["aud"]
+			) {
+				throw new TokenVerificationError("Invalid Token");
+			}
+
+			// Verify token type
+			if (
+				decodedToken["aud"] !=
+				createHash("sha256")
+					.update(`${decodedToken["iat"]}+${type}`)
+					.digest("hex")
+			) {
+				throw new TokenVerificationError("Invalid Token Type");
+			}
+		} catch (error) {
+			if (error instanceof jwt.JsonWebTokenError) {
+				throw new jwt.JsonWebTokenError("Invalid JWT");
+			}
+			throw error;
+		}
+
+		try {
 			// Validate token
 			const isValidToken =
-				token ||
+				token &&
 				(await this.tokenBlacklist.validateToken(type, token));
 
-			if (!isValidToken || !decodedToken["sub"]) {
+			if (!isValidToken) {
 				throw new TokenVerificationError("Invalid Token");
 			}
 
@@ -96,11 +130,13 @@ export class TokenService {
 	public getTokens(userId: string): TokenPair {
 		const accessToken = this.generateToken(
 			userId,
-			this.access_token_length
+			this.access_token_length,
+			"access"
 		);
 		const refreshToken = this.generateToken(
 			userId,
-			this.refresh_token_length
+			this.refresh_token_length,
+			"refresh"
 		);
 
 		// Commit to database
