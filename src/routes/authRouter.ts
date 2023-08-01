@@ -66,7 +66,7 @@ router.post("/refresh", async (req: Request, res: Response) => {
 		if (error instanceof z.ZodError) {
 			res.status(400).send(error.flatten().fieldErrors);
 		} else if (error instanceof TokenVerificationError) {
-			res.status(401).send();
+			res.status(403).send();
 		} else {
 			res.status(400).send(error);
 		}

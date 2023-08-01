@@ -91,3 +91,7 @@ body {
 	display: inline;
 	margin-right: 10px;
 }
+
+.button {
+	min-width: 100%;
+}
