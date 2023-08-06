@@ -2,6 +2,7 @@ import * as jwt from "jsonwebtoken";
 import { TokenPair } from "./AuthController";
 import { TokenBlacklist } from "./TokenBlacklist";
 import { createHash } from "crypto";
+import { DateTime } from "luxon";
 
 export type TokenType = "access" | "refresh";
 
@@ -25,14 +26,15 @@ export class TokenService {
 		type: TokenType,
 		options: object = {}
 	): string {
-		const currTime = Math.floor(Date.now() / 1000);
+		const currDate = DateTime.now();
+		const expDate = currDate.plus({ minutes: expiryMin });
 
 		const payload: jwt.JwtPayload = {
 			sub: userId,
-			iat: currTime,
-			exp: currTime + expiryMin * 60,
+			iat: currDate.toUnixInteger(),
+			exp: expDate.toUnixInteger(),
 			aud: createHash("sha256")
-				.update(`${currTime}+${type}`)
+				.update(`${currDate.toUnixInteger()}+${type}`)
 				.digest("hex"),
 			...options,
 		};
@@ -73,6 +75,9 @@ export class TokenService {
 		} catch (error) {
 			if (error instanceof jwt.JsonWebTokenError) {
 				throw new jwt.JsonWebTokenError("Invalid JWT");
+			} else if (error instanceof jwt.TokenExpiredError) {
+				console.log("Expired " + token);
+				throw new TokenVerificationError("Invalid token");
 			}
 			throw error;
 		}
@@ -117,12 +122,13 @@ export class TokenService {
 			}
 
 			// Add to blacklist
-			this.tokenBlacklist.revokeToken("access", accessToken);
-			this.tokenBlacklist.revokeToken("refresh", refreshToken);
+			await this.tokenBlacklist.revokeToken("access", accessToken);
+			await this.tokenBlacklist.revokeToken("refresh", refreshToken);
 
 			// Remove from DB
 			this.tokenBlacklist.removeTokenPair(refreshToken);
 		} catch (error) {
+			console.log(error);
 			throw new TokenVerificationError("Invalid Token");
 		}
 	}

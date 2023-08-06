@@ -36,17 +36,17 @@ export class AccountRepo {
 						.limit(5)
 				).as("holdings");
 			})
-			// .innerJoin(
-			// 	db
-			// 		.selectFrom("holdings")
-			// 		.select(["holdings.account_id"])
-			// 		.where("user_id", "=", user_id)
-			// 		.groupBy("account_id")
-			// 		.having((eb) => eb.fn.count("id"), ">=", 1)
-			// 		.as("h"),
-			// 	"accounts.id",
-			// 	"h.account_id"
-			// )
+			.innerJoin(
+				db
+					.selectFrom("holdings")
+					.select(["holdings.account_id"])
+					.where("user_id", "=", user_id)
+					.groupBy("account_id")
+					.having((eb) => eb.fn.count("id"), ">=", 1)
+					.as("h"),
+				"accounts.id",
+				"h.account_id"
+			)
 			.where("user_id", "=", user_id)
 			.execute();
 		return results;

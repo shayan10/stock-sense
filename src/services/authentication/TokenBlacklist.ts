@@ -1,6 +1,7 @@
 import { redisClient } from "../../db/Redis";
-import { TokenType } from "./TokenService";
+import { TokenType, TokenVerificationError } from "./TokenService";
 import { db } from "../../db/Postgres";
+import { DateTime } from "luxon";
 
 import * as jwt from "jsonwebtoken";
 
@@ -11,19 +12,36 @@ export class TokenBlacklist {
 	}
 
 	async revokeToken(type: TokenType, token: string): Promise<void> {
-		const decodedToken = jwt.verify(token, this.JWT_SECRET, {
-			ignoreExpiration: false,
-			ignoreNotBefore: false,
-		}) as jwt.JwtPayload;
+		try {
+			const decodedToken = jwt.verify(token, this.JWT_SECRET, {
+				ignoreNotBefore: false,
+				allowInvalidAsymmetricKeyTypes: false,
+				ignoreExpiration: true,
+			}) as jwt.JwtPayload;
 
-		const expTime = decodedToken.exp || 0;
-		const remainingTime = expTime - Math.floor(Date.now() / 1000);
-		await redisClient.set(
-			`${type}-blacklist:${token}`,
-			token,
-			"PXAT",
-			remainingTime
-		);
+			if (!decodedToken.exp) {
+				return;
+			}
+
+			const expTime =
+				decodedToken.exp > DateTime.now().toUnixInteger()
+					? decodedToken.exp
+					: 0;
+
+			if (expTime == 0) {
+				return;
+			}
+
+			await redisClient.set(
+				`${type}-blacklist:${token}`,
+				token,
+				"PXAT",
+				expTime
+			);
+		} catch (error) {
+			console.log(error);
+			throw new TokenVerificationError("Invalid Token");
+		}
 	}
 
 	async saveTokenPair(

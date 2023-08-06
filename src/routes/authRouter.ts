@@ -37,13 +37,11 @@ router.post("/login", async (req: Request, res: Response) => {
 	}
 });
 
-router.post("/refresh", async (req: Request, res: Response) => {
+router.get("/refresh", async (req: Request, res: Response) => {
 	try {
-		console.log(req.cookies);
 		// Check if refresh token attached
 		if (!req.cookies.refreshToken)
 			res.status(401).send({ message: "Forbidden" });
-		console.log(req.cookies.refreshToken);
 		// Refresh Token
 		const { accessToken, refreshToken } = await authController.refresh(
 			req.cookies.refreshToken
@@ -65,6 +63,7 @@ router.post("/refresh", async (req: Request, res: Response) => {
 		if (error instanceof z.ZodError) {
 			res.status(400).send(error.flatten().fieldErrors);
 		} else {
+			console.log(error);
 			res.status(401).send();
 		}
 	}

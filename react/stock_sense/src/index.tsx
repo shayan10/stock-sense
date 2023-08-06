@@ -14,12 +14,12 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-	<React.StrictMode>
+	<React.Fragment>
 		<AuthProvider>
 			<BrowserRouter>
 				<Navbar />
 				<App />
 			</BrowserRouter>
 		</AuthProvider>
-	</React.StrictMode>
+	</React.Fragment>
 );

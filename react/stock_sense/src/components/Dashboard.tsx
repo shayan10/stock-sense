@@ -1,18 +1,17 @@
-import { useEffect } from "react";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
-
+import { QuoteProvider } from "../context/QuoteContext";
+import HoldingsViewer from "./HoldingsViewer";
+import Performance from "./Performance";
+import SearchBar from "./SearchBar";
 const Dashboard = () => {
-	const axios = useAxiosPrivate();
+	return (
+		<div className="container">
+			<QuoteProvider>
+				<SearchBar />
+				<Performance />
+				<HoldingsViewer />
+			</QuoteProvider>
+		</div>
+	);
+};
 
-	useEffect(() => {
-		async function fetchData() {
-			const users = await axios.get('/holdings/positions');
-			console.log(users);
-		}
-		fetchData();
-	})
-
-	return (<h1>Dashboard</h1>);
-}
- 
 export default Dashboard;
