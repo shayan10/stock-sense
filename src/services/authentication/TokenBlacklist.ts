@@ -39,8 +39,7 @@ export class TokenBlacklist {
 				expTime
 			);
 		} catch (error) {
-			console.log(error);
-			throw new TokenVerificationError("Invalid Token");
+			throw TokenVerificationError;
 		}
 	}
 

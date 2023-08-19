@@ -1,15 +1,29 @@
 import { db } from "../../db/Postgres";
-import { UserNotFound } from "./User";
 import { UserPayload, UserUpdatePayload } from "./UserSchema";
+import { BaseError } from "../../errors/customError";
+
+export const UserNotFoundError = (username?: string) => {
+	const message = username
+		? `No user found with username ${username}`
+		: "No user found";
+	return new BaseError(
+		message,
+		"user_not_found",
+		"You have entered an invalid username or password",
+		400
+	);
+};
 
 export class UserRepo {
+	constructor() {}
+
 	async find(id: number) {
 		const user = await db
 			.selectFrom("users")
 			.select(["id", "username", "first_name", "last_name"])
 			.where("id", "=", id)
 			.executeTakeFirstOrThrow((value) => {
-				return new UserNotFound("User Not Found");
+				return UserNotFoundError();
 			});
 		return user;
 	}
@@ -19,9 +33,7 @@ export class UserRepo {
 			.selectFrom("users")
 			.where("username", "=", username)
 			.selectAll()
-			.executeTakeFirstOrThrow(
-				(error) => new UserNotFound("Invalid username")
-			);
+			.executeTakeFirstOrThrow((error) => UserNotFoundError());
 		return user;
 	}
 
@@ -40,12 +52,10 @@ export class UserRepo {
 			.updateTable("users")
 			.set(userInfo)
 			.where("id", "=", id)
-			.executeTakeFirstOrThrow(
-				(error) => new UserNotFound("Invalid User")
-			);
+			.executeTakeFirstOrThrow((error) => UserNotFoundError());
 	}
 
-	async isUsernameTaken(username: string) {
+	async usernameTaken(username: string) {
 		const usernameTaken =
 			(
 				await db
@@ -56,3 +66,5 @@ export class UserRepo {
 		return usernameTaken;
 	}
 }
+
+export const userRepo: UserRepo = new UserRepo();

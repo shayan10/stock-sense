@@ -1,6 +1,7 @@
 import request from "supertest";
 import { app } from "../src/app";
 import { userFactory } from "./factories/user";
+import { it, describe, expect } from "@jest/globals";
 
 describe("POST /users/register", () => {
 	it("returns 200 for properly created user", async () => {

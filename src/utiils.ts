@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BaseError } from "./errors/customError";
 
 export const customMap: z.ZodErrorMap = (issue, ctx) => {
 	if (issue.code === z.ZodIssueCode.too_big) {
@@ -25,7 +26,12 @@ export const validate = async <T extends z.ZodTypeAny>(
 	try {
 		const value = await schema.parseAsync(data);
 		if (Object.keys(value).length === 0) {
-			throw new NoArgumentsProvidedException("No Arguments Provided");
+			throw new BaseError(
+				"No arguments provided",
+				"no_arg_provided",
+				"No arguments were given in the request payload",
+				400
+			);
 		}
 		return value;
 	} catch (error) {

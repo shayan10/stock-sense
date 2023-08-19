@@ -1,8 +1,10 @@
+import { BaseError } from "../../errors/customError";
 import {
 	stockDataFetcher,
 	Quote,
 	News,
 	HistoricalQuote,
+	Metric,
 } from "./../StockDataFetcher";
 import {
 	HoldingPublicResponse,
@@ -18,6 +20,8 @@ export type PositionDetail = {
 	cost_basis: number;
 	quantity: number;
 	ticker_symbol: string;
+	metrics: Metric;
+	quote: Quote;
 };
 
 export type PositionList = {
@@ -60,17 +64,28 @@ class HoldingService {
 	async positionDetail(
 		user_id: number,
 		holding_id: number
-	): Promise<PositionDetail | undefined> {
+	): Promise<PositionDetail> {
 		const holding = await holdingRepo.get(user_id, holding_id);
 		if (!holding) {
-			return undefined;
+			throw new BaseError(
+				"Holding not found",
+				"not_found",
+				"No holdign was found with the given id",
+				404
+			);
 		}
 		const historicalPrices: HistoricalQuote[] =
 			await stockDataFetcher.getHistoricalPrices(
 				holding.ticker_symbol
 			);
+		const metrics = await stockDataFetcher.getMetrics(
+			holding.ticker_symbol
+		);
+		const quote = await stockDataFetcher.getQuote(holding.ticker_symbol);
 		return {
 			...holding,
+			quote,
+			metrics,
 			historicalPrices,
 		};
 	}

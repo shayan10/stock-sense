@@ -1,22 +1,24 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import { holdingService } from "../services/holdings/HoldingService";
-import { param } from "express-validator";
+import { param, validationResult } from "express-validator";
 
 const router = Router();
 
-router.get("/positions", async (req: Request, res: Response) => {
-	const { user_id } = req.body;
-	try {
-		const positions = await holdingService.retrievePositions(
-			parseInt(user_id)
-		);
+router.get(
+	"/positions",
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { user_id } = req.body;
+			const positions = await holdingService.retrievePositions(
+				parseInt(user_id)
+			);
 
-		res.status(200).send(positions);
-	} catch (error) {
-		console.log(error);
-		res.status(400).send({ message: "Could not retrieve holdings" });
+			res.status(200).send(positions);
+		} catch (error) {
+			next(error);
+		}
 	}
-});
+);
 
 router.get(
 	"/:holding_id",
@@ -25,22 +27,22 @@ router.get(
 			.isNumeric()
 			.withMessage("Holding ID must be an integer"),
 	],
-	async (req: Request, res: Response) => {
-		const { user_id } = req.body;
-		const { holding_id } = req.params;
-
+	async (req: Request, res: Response, next: NextFunction) => {
 		try {
+			const validatorResult = validationResult(req);
+
+			if (!validatorResult.isEmpty()) {
+				res.status(400).send(validatorResult.array());
+				return;
+			}
+
+			const { user_id } = req.body;
+			const { holding_id } = req.params;
+
 			const holdingDetails = await holdingService.positionDetail(
 				parseInt(user_id),
 				parseInt(holding_id)
 			);
-
-			if (!holdingDetails) {
-				res.status(404).send({
-					message: "Holding not found",
-				});
-				return;
-			}
 
 			const news = await holdingService.positionNews(
 				holdingDetails.ticker_symbol
@@ -50,10 +52,7 @@ router.get(
 				news,
 			});
 		} catch (error) {
-			console.log(error);
-			res.status(400).send({
-				message: "Unable to retrieve holding details",
-			});
+			next(error);
 		}
 	}
 );

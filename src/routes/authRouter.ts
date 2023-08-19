@@ -1,97 +1,96 @@
 import { Request, Response, Router } from "express";
 import { authController } from "../services/authentication/auth";
-import { TokenVerificationError } from "../services/authentication/TokenService";
 import { z } from "zod";
 import { authMiddleware } from "../middlewares/authMiddleware";
+import { BaseError } from "../errors/customError";
+import { NextFunction } from "express";
 
 const router = Router();
 
-router.post("/login", async (req: Request, res: Response) => {
-	const { body } = req;
+router.post(
+	"/login",
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { body } = req;
 
-	try {
-		// Validate username and password
-		const { username, password } = z
-			.object({
-				username: z.string(),
-				password: z.string(),
-			})
-			.strip()
-			.parse(body);
+			// Validate username and password
+			const { username, password } = z
+				.object({
+					username: z.string(),
+					password: z.string(),
+				})
+				.strip()
+				.parse(body);
 
-		const { accessToken, refreshToken } =
-			await authController.authenticate(username, password);
+			const { accessToken, refreshToken } =
+				await authController.authenticate(username, password);
 
-		res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-		});
+			res.cookie("refreshToken", refreshToken, {
+				httpOnly: true,
+			});
 
-		res.status(200).send({ accessToken });
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			res.status(400).send(error.flatten().fieldErrors);
-		} else {
-			console.log(error);
-			res.status(400).send(error);
+			res.status(200).send({ accessToken });
+		} catch (error) {
+			next(error);
 		}
 	}
-});
+);
 
-router.get("/refresh", async (req: Request, res: Response) => {
-	try {
-		// Check if refresh token attached
-		if (!req.cookies.refreshToken)
-			res.status(401).send({ message: "Forbidden" });
-		// Refresh Token
-		const { accessToken, refreshToken } = await authController.refresh(
-			req.cookies.refreshToken
-		);
+router.get(
+	"/refresh",
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			// Check if refresh token attached
+			if (!req.cookies.refreshToken)
+				next(
+					new BaseError(
+						"No refresh token specified",
+						"refresh_token_not_provided",
+						"No refresh token present in the request",
+						401
+					)
+				);
 
-		res.clearCookie("refreshToken");
-		res.cookie("refreshToken", "", {
-			expires: new Date(0),
-		});
+			// Refresh Token
+			const { accessToken, refreshToken } =
+				await authController.refresh(req.cookies.refreshToken);
 
-		res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-		});
+			res.clearCookie("refreshToken");
 
-		res.status(200).send({
-			accessToken,
-		});
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			res.status(400).send(error.flatten().fieldErrors);
-		} else {
-			console.log(error);
-			res.status(401).send();
+			res.cookie("refreshToken", refreshToken, {
+				httpOnly: true,
+			});
+
+			res.status(200).send({
+				accessToken,
+			});
+		} catch (error) {
+			next(error);
 		}
 	}
-});
+);
 
-router.get("/logout", authMiddleware, async (req: Request, res: Response) => {
-	try {
-		// Check if refresh token attached
-		if (!req.cookies.refreshToken || !req.headers.authorization) {
-			res.status(401).send({ message: "Forbidden" });
-			return;
-		}
+router.get(
+	"/logout",
+	authMiddleware,
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			// Check if refresh token attached
+			if (!req.cookies.refreshToken || !req.headers.authorization) {
+				res.status(401).send({ message: "Forbidden" });
+				return;
+			}
 
-		authController.logout(
-			req.headers.authorization,
-			req.cookies.refreshToken
-		);
-		res.clearCookie("refreshToken");
-		res.status(200).send();
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			res.status(400).send(error.flatten().fieldErrors);
-		} else if (error instanceof TokenVerificationError) {
-			res.status(401).send();
-		} else {
-			res.status(400).send(error);
+			await authController.logout(
+				req.headers.authorization,
+				req.cookies.refreshToken
+			);
+			res.clearCookie("refreshToken");
+			res.status(204).send();
+		} catch (error) {
+			next(error);
 		}
 	}
-});
+);
 
 export default router;

@@ -1,31 +1,31 @@
-import { UserRepo } from "./UserRepo";
+import { userRepo } from "./UserRepo";
 import { UserPayload, UserResponse, UserUpdatePayload } from "./UserSchema";
 
-export class UserNotFound extends Error {
-	constructor(public override message: string) {
-		super();
-	}
+export interface IUserRepo {
+	usernameTaken(arg: string): Promise<boolean>;
+	insert(payload: UserPayload): Promise<void | UserResponse>;
+	find(id: number): Promise<UserResponse>;
+	update(id: number, userInfo: UserUpdatePayload): Promise<void>;
 }
 
 export class User {
-	private static userRepo = new UserRepo();
+	constructor(private userRepo: IUserRepo) {}
 
-	static async isUsernameTaken(username: string): Promise<boolean> {
-		return this.userRepo.isUsernameTaken(username);
+	async isUsernameTaken(username: string): Promise<boolean> {
+		return this.userRepo.usernameTaken(username);
 	}
 
-	static async insert(userInfo: UserPayload): Promise<void | UserResponse> {
+	async insert(userInfo: UserPayload): Promise<void | UserResponse> {
 		return this.userRepo.insert(userInfo);
 	}
 
-	static async get(id: number): Promise<UserResponse> {
+	async get(id: number): Promise<UserResponse> {
 		return this.userRepo.find(id);
 	}
 
-	static async update(
-		id: number,
-		userInfo: UserUpdatePayload
-	): Promise<void> {
+	async update(id: number, userInfo: UserUpdatePayload): Promise<void> {
 		return this.userRepo.update(id, userInfo);
 	}
 }
+
+export const user: User = new User(userRepo);

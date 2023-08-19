@@ -8,6 +8,7 @@ import { redisClient } from "../db/Redis";
 interface RawQuote {
 	c: number;
 	h: number;
+	dp: number;
 	l: number;
 	o: number;
 	pc: number;
@@ -17,7 +18,18 @@ interface RawQuote {
 export interface Quote {
 	current_price: number;
 	previous_close: number;
+	current_percent_change: number;
 	timestamp: Date;
+	open: number;
+	low: number;
+	high: number;
+}
+
+export interface Metric {
+	low: number;
+	high: number;
+	low_per_change: number;
+	high_per_change: number;
 }
 
 export interface News {
@@ -37,6 +49,17 @@ export interface HistoricalQuote {
 	low: number;
 	high: number;
 	close: number;
+	open: number;
+}
+
+export interface RawCandle {
+	c: number[];
+	o: number[];
+	v: number[];
+	l: number[];
+	h: number[];
+	t: number[];
+	s: string;
 }
 
 class StockDataFetcher {
@@ -68,7 +91,11 @@ class StockDataFetcher {
 		const result: Quote = {
 			current_price: data.c,
 			previous_close: data.pc,
+			current_percent_change: data.dp,
 			timestamp: DateTime.fromSeconds(data.t).toJSDate(),
+			open: data.o,
+			low: data.l,
+			high: data.h,
 		};
 
 		await redisClient.set(
@@ -153,32 +180,70 @@ class StockDataFetcher {
 	async getHistoricalPrices(
 		ticker_symbol: string
 	): Promise<HistoricalQuote[]> {
+		try {
+			const endDate = DateTime.now();
+			const startDate = endDate.minus({ days: 1 });
+
+			const response = await axios.get(
+				`https://finnhub.io/api/v1/stock/candle?symbol=${ticker_symbol}&resolution=1&from=${startDate.toUnixInteger()}&to=${endDate.toUnixInteger()}`,
+				{
+					headers: {
+						"X-Finnhub-Token": this.API_KEY,
+					},
+				}
+			);
+			const data = response.data as RawCandle;
+
+			let result: HistoricalQuote[] = [];
+
+			if (data.s != "ok") {
+				return [];
+			}
+
+			const currentDateTime = DateTime.now();
+			const targetDateTime = currentDateTime.set({
+				hour: 7,
+				minute: 0,
+				second: 0,
+				millisecond: 0,
+			});
+
+			for (let i = 0; i < data.c.length; i++) {
+				const timestamp = DateTime.fromSeconds(data.t[i]);
+				if (timestamp > targetDateTime) {
+					result.push({
+						open: data.o[i],
+						close: data.c[i],
+						low: data.l[i],
+						high: data.h[i],
+						timestamp: timestamp.toJSDate(),
+					});
+				}
+			}
+			return result;
+		} catch (error) {
+			return [];
+		}
+	}
+
+	async getMetrics(ticker_symbol: string): Promise<Metric> {
 		const cachedResult: string | null = await redisClient.get(
-			`${ticker_symbol}-historical-prices`
+			`${ticker_symbol}-metrics`
 		);
 		if (cachedResult) {
-			const historicalPrices = JSON.parse(
-				cachedResult
-			) as HistoricalQuote[];
-			return historicalPrices;
+			const metrics = JSON.parse(cachedResult);
+			return metrics;
 		}
-		const endDate = DateTime.now();
-		const startDate = endDate.minus({ days: 31 });
-		const data = await yahooFinance.historical(ticker_symbol, {
-			period1: startDate.toFormat("yyyy-MM-dd"),
-			period2: endDate.toFormat("yyyy-MM-dd"),
-		});
-		const result = data.map(
-			(historicalData): HistoricalQuote => ({
-				timestamp: historicalData.date,
-				low: historicalData.low,
-				high: historicalData.high,
-				close: historicalData.close,
-			})
-		);
+		const data = await yahooFinance.quote(ticker_symbol);
+		const result = {
+			low: data.fiftyTwoWeekLow || 0,
+			high: data.fiftyTwoWeekHigh || 0,
+			low_per_change: data.fiftyTwoWeekLowChange || 0,
+			high_per_change: data.fiftyTwoWeekHighChange || 0,
+		};
 
 		await redisClient.set(
-			`${ticker_symbol}-historical-prices`,
+			`${ticker_symbol}-metrics`,
 			JSON.stringify(result),
 			"EXAT",
 			DateTime.now().plus({ hours: 12 }).toUnixInteger()

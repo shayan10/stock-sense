@@ -1,6 +1,8 @@
+import { sql } from "kysely";
 import { db } from "../../db/Postgres";
 import { AccountPayload } from "./AccountSchema";
-import { jsonArrayFrom } from "kysely/helpers/postgres";
+import { AccountPublicResponse } from "./AccountSchema";
+
 export class AccountRepo {
 	async insert(user_id: number, data: AccountPayload[]) {
 		const accounts = data.map((account: AccountPayload) => {
@@ -18,38 +20,25 @@ export class AccountRepo {
 		return results;
 	}
 
-	async get(user_id: number) {
-		const results = await db
-			.selectFrom("accounts")
-			.select(["accounts.id", "accounts.account_name"])
-			.select((eb) => {
-				return jsonArrayFrom(
-					eb
-						.selectFrom("holdings")
-						.selectAll("holdings")
-						.whereRef(
-							"holdings.account_id",
-							"=",
-							"accounts.id"
-						)
-						.orderBy("holdings.cost_basis")
-						.limit(5)
-				).as("holdings");
-			})
-			.innerJoin(
-				db
-					.selectFrom("holdings")
-					.select(["holdings.account_id"])
-					.where("user_id", "=", user_id)
-					.groupBy("account_id")
-					.having((eb) => eb.fn.count("id"), ">=", 1)
-					.as("h"),
-				"accounts.id",
-				"h.account_id"
-			)
-			.where("user_id", "=", user_id)
-			.execute();
-		return results;
+	async get(user_id: number): Promise<AccountPublicResponse[]> {
+		const query = sql<AccountPublicResponse>`SELECT
+			accounts.id,
+			accounts.account_name,
+			COUNT(*) AS "number_of_holdings",
+			JSON_AGG(JSON_BUILD_OBJECT(
+				'id', holdings.id,
+				'account_id', holdings.account_id,
+				'ticker_symbol', holdings.ticker_symbol,
+				'quantity', holdings.quantity,
+				'cost_basis', holdings.cost_basis 
+			)) AS holdings
+			FROM accounts
+			INNER JOIN holdings ON holdings.account_id = accounts.id
+			WHERE accounts.user_id = ${user_id}
+			GROUP BY accounts.id, accounts.account_name;
+		 `;
+		const results = await query.execute(db);
+		return results.rows;
 	}
 }
 

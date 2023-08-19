@@ -3,6 +3,7 @@ import plaidService from "../services/plaid/PlaidService";
 import accountAdapter from "../services/plaid/adapters/AccountAdapter";
 import holdingAdapter from "../services/plaid/adapters/HoldingsAdapter";
 import { db } from "../db/Postgres";
+import { BaseError } from "../errors/customError";
 
 const router = Router();
 
@@ -72,7 +73,12 @@ router.post("/access-token", async (req: Request, res: Response) => {
 		const { public_token, user_id } = req.body;
 
 		if (!public_token && typeof public_token != "string") {
-			res.status(400).send({ message: "Invalid Public Token" });
+			throw new BaseError(
+				"No public token provided",
+				"invalid_plaid_public_token",
+				"No public token was received in the request",
+				400
+			);
 		}
 
 		const accessToken = await plaidService.generateAccessToken(

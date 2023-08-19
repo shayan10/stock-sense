@@ -32,7 +32,6 @@ class PlaidService {
 				products: [Products.Investments],
 				country_codes: [CountryCode.Us],
 				language: "en",
-				// webhook: 'https://sample-web-hook.com',
 				account_filters: {
 					investment: {
 						account_subtypes: [InvestmentAccountSubtype.All],
@@ -40,13 +39,11 @@ class PlaidService {
 				},
 			};
 
-			// TODO: Change this to fetch the access token from the DB and be in update mode
 			if (access_token) {
 				request["access_token"] = access_token;
 			}
 
 			const response = await this.plaidAPI.linkTokenCreate(request);
-			console.log(response.data);
 			if (response.status != 200) {
 				throw new Error("Failed to generated link");
 			}

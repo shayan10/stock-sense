@@ -1,14 +1,9 @@
+import { UserNotFoundError } from "../users/UserRepo";
 import { AuthRepo } from "./AuthRepo";
 import { TokenService } from "./TokenService";
 import { compare } from "bcrypt";
 
 export type TokenPair = { accessToken: string; refreshToken: string };
-
-export class AuthenticationError extends Error {
-	constructor(public override message: string) {
-		super();
-	}
-}
 
 interface RequiredUserProps {
 	id: number;
@@ -35,7 +30,7 @@ export class AuthController<T extends RequiredUserProps> {
 		);
 
 		if (!validPassword) {
-			throw new AuthenticationError("Invalid Credentials");
+			throw UserNotFoundError();
 		}
 
 		// Generate tokens

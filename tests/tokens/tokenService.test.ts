@@ -5,7 +5,7 @@ import { UserPayload, UserResponse } from "../../src/services/users/UserSchema";
 import { tokenService } from "../../src/services/authentication/auth";
 import jwt from "jsonwebtoken";
 import { TokenVerificationError } from "../../src/services/authentication/TokenService";
-//import { TokenVerificationError } from "../../src/services/authentication/TokenService";
+import { beforeAll, it, describe, expect } from "@jest/globals";
 
 let userPayload: UserPayload;
 let user: UserResponse;
@@ -54,7 +54,7 @@ describe("Token Verification", () => {
 		try {
 			await tokenService.verifyAccessToken("helloWorld");
 		} catch (error) {
-			expect(error).toBeInstanceOf(jwt.JsonWebTokenError);
+			expect(error).toEqual(TokenVerificationError);
 		}
 	});
 
@@ -64,7 +64,7 @@ describe("Token Verification", () => {
 			const invalidToken = tokens.accessToken + "x";
 			await tokenService.verifyAccessToken(invalidToken);
 		} catch (error) {
-			expect(error).toBeInstanceOf(jwt.JsonWebTokenError);
+			expect(error).toEqual(TokenVerificationError);
 		}
 	});
 
@@ -85,7 +85,7 @@ describe("Token Verification", () => {
 			const token = jwt.sign(payload, process.env.JWT_SECRET);
 			await tokenService.verifyRefreshToken(token);
 		} catch (error) {
-			expect(error).toBeInstanceOf(TokenVerificationError);
+			expect(error).toEqual(TokenVerificationError);
 		}
 	});
 });
@@ -101,7 +101,7 @@ describe("Token Refresh", () => {
 		try {
 			await tokenService.verifyAccessToken(originalTokens.accessToken);
 		} catch (error) {
-			expect(error).toBeInstanceOf(TokenVerificationError);
+			expect(error).toEqual(TokenVerificationError);
 		}
 
 		try {
@@ -109,7 +109,7 @@ describe("Token Refresh", () => {
 				originalTokens.refreshToken
 			);
 		} catch (error) {
-			expect(error).toBeInstanceOf(TokenVerificationError);
+			expect(error).toEqual(TokenVerificationError);
 		}
 	});
 
@@ -119,7 +119,7 @@ describe("Token Refresh", () => {
 		try {
 			await tokenService.refresh(tokens.accessToken);
 		} catch (error) {
-			expect(error).toBeInstanceOf(TokenVerificationError);
+			expect(error).toEqual(TokenVerificationError);
 		}
 	});
 });

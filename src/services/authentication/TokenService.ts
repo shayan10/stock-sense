@@ -3,14 +3,23 @@ import { TokenPair } from "./AuthController";
 import { TokenBlacklist } from "./TokenBlacklist";
 import { createHash } from "crypto";
 import { DateTime } from "luxon";
+import { BaseError } from "../../errors/customError";
 
 export type TokenType = "access" | "refresh";
 
-export class TokenVerificationError extends Error {
-	constructor(public override message: string) {
-		super();
-	}
-}
+export const TokenVerificationError = new BaseError(
+	"This token is not valid",
+	"invalid_token",
+	"This token is no longer valid",
+	401
+);
+
+export const TokenExpiredError = new BaseError(
+	"This token has expired",
+	"expired_token",
+	"This token is no longer valid",
+	401
+);
 
 export class TokenService {
 	constructor(
@@ -60,7 +69,7 @@ export class TokenService {
 				!decodedToken["exp"] ||
 				!decodedToken["aud"]
 			) {
-				throw new TokenVerificationError("Invalid Token");
+				throw TokenVerificationError;
 			}
 
 			// Verify token type
@@ -70,16 +79,13 @@ export class TokenService {
 					.update(`${decodedToken["iat"]}+${type}`)
 					.digest("hex")
 			) {
-				throw new TokenVerificationError("Invalid Token Type");
+				throw TokenVerificationError;
 			}
 		} catch (error) {
-			if (error instanceof jwt.JsonWebTokenError) {
-				throw new jwt.JsonWebTokenError("Invalid JWT");
-			} else if (error instanceof jwt.TokenExpiredError) {
-				console.log("Expired " + token);
-				throw new TokenVerificationError("Invalid token");
-			}
-			throw error;
+			if (error instanceof jwt.TokenExpiredError)
+				throw TokenExpiredError;
+
+			throw TokenVerificationError;
 		}
 
 		try {
@@ -89,12 +95,12 @@ export class TokenService {
 				(await this.tokenBlacklist.validateToken(type, token));
 
 			if (!isValidToken) {
-				throw new TokenVerificationError("Invalid Token");
+				throw TokenVerificationError;
 			}
 
 			return decodedToken.sub as string;
 		} catch (error) {
-			throw new TokenVerificationError("Invalid Token");
+			throw TokenVerificationError;
 		}
 	}
 
@@ -117,8 +123,9 @@ export class TokenService {
 			const accessToken = await this.tokenBlacklist.getAccessToken(
 				refreshToken
 			);
+
 			if (!accessToken) {
-				throw new TokenVerificationError("Token does not exist");
+				throw TokenVerificationError;
 			}
 
 			// Add to blacklist
@@ -128,8 +135,7 @@ export class TokenService {
 			// Remove from DB
 			this.tokenBlacklist.removeTokenPair(refreshToken);
 		} catch (error) {
-			console.log(error);
-			throw new TokenVerificationError("Invalid Token");
+			throw TokenVerificationError;
 		}
 	}
 
