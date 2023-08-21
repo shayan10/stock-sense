@@ -29,18 +29,18 @@ io.on("connection", (socket) => {
 			const { ticker_symbol } = response;
 
 			if (!ticker_symbol) {
-				throw new Error("Missing ticker_symbol in request");
+				socket.emit(
+					"error",
+					"ticker_symbol not present in request"
+				);
+				socket.disconnect(true);
 			}
-
-			console.log("Message received: ", message);
 
 			// Join the room associated with the ticker symbol
 			socket.join(ticker_symbol);
 
-			io.to(`${ticker_symbol}`).emit("quote");
 			// Store the ticker_symbol in Redis
 			await redisClient.set(socket.id, ticker_symbol);
-			console.log(socket.rooms);
 
 			// Subscribe to Finnhub API
 			finnhubWS.send(
@@ -49,30 +49,18 @@ io.on("connection", (socket) => {
 		} catch (error) {
 			console.error("Error handling client message:", error);
 			// Close the client's connection in case of an error
-			socket.disconnect();
+			socket.disconnect(true);
 		}
 	});
 
 	// Handle messages from Finnhub WebSocket
 	finnhubWS.on("message", (data) => {
 		try {
-			//const response = JSON.parse(data.toString());
-			const quote = [
-				{
-					c: ["1", "24", "12"],
-					p: 217.15,
-					s: "PAYX",
-					t: 1692400114538,
-					v: 1,
-				},
-			];
-			console.log(quote);
-			// if (!Array.isArray(quote) || !quote) {
-			// 	throw new Error("Invalid quote data received from Finnhub");
-			// }
-
-			// Broadcast the quote data to all clients in the room (ticker symbol)
-			io.to(quote[0].s).emit("quote", JSON.stringify(quote));
+			const response = JSON.parse(data.toString());
+			const quote = response.data;
+			if (Array.isArray(quote) && quote) {
+				io.to(quote[0].s).emit("quote", JSON.stringify(quote));
+			}
 		} catch (error) {
 			console.error("Error handling Finnhub message:", error);
 		}
@@ -83,14 +71,12 @@ io.on("connection", (socket) => {
 			const room = await redisClient.get(socket.id);
 			if (room) {
 				socket.leave(room);
-				console.log("Leaving room: ", room);
 			}
 			redisClient.del(socket.id);
-			console.log("Disconnecting...");
 		} catch (error) {
 			console.error("Error handling client close:", error);
 			// Close the client's connection in case of an error
-			socket.disconnect();
+			socket.disconnect(true);
 		}
 	});
 });

@@ -73,7 +73,6 @@ class StockDataFetcher {
 			const quote: Quote = JSON.parse(cachedResult) as Quote;
 			return quote;
 		}
-		console.log(`${this.URL}/quote?symbol=${ticker_symbol}`);
 		const response = await axios.get(
 			`${this.URL}/quote?symbol=${ticker_symbol}`,
 			{
@@ -177,12 +176,25 @@ class StockDataFetcher {
 		}
 	}
 
-	async getHistoricalPrices(
-		ticker_symbol: string
-	): Promise<HistoricalQuote[]> {
+	private processCandles(data: RawCandle): HistoricalQuote[] {
+		let result: HistoricalQuote[] = [];
+		for (let i = 0; i < data.c.length; i++) {
+			const timestamp = DateTime.fromSeconds(data.t[i]);
+			result.push({
+				open: data.o[i],
+				close: data.c[i],
+				low: data.l[i],
+				high: data.h[i],
+				timestamp: timestamp.toJSDate(),
+			});
+		}
+		return result;
+	}
+
+	async getStockCandles(ticker_symbol: string): Promise<HistoricalQuote[]> {
 		try {
 			const endDate = DateTime.now();
-			const startDate = endDate.minus({ days: 1 });
+			const startDate = endDate.minus({ days: 3 });
 
 			const response = await axios.get(
 				`https://finnhub.io/api/v1/stock/candle?symbol=${ticker_symbol}&resolution=1&from=${startDate.toUnixInteger()}&to=${endDate.toUnixInteger()}`,
@@ -192,35 +204,16 @@ class StockDataFetcher {
 					},
 				}
 			);
-			const data = response.data as RawCandle;
 
-			let result: HistoricalQuote[] = [];
+			const data = response.data as RawCandle;
 
 			if (data.s != "ok") {
 				return [];
 			}
 
-			const currentDateTime = DateTime.now();
-			const targetDateTime = currentDateTime.set({
-				hour: 7,
-				minute: 0,
-				second: 0,
-				millisecond: 0,
-			});
+			let candles: HistoricalQuote[] = this.processCandles(data);
 
-			for (let i = 0; i < data.c.length; i++) {
-				const timestamp = DateTime.fromSeconds(data.t[i]);
-				if (timestamp > targetDateTime) {
-					result.push({
-						open: data.o[i],
-						close: data.c[i],
-						low: data.l[i],
-						high: data.h[i],
-						timestamp: timestamp.toJSDate(),
-					});
-				}
-			}
-			return result;
+			return candles;
 		} catch (error) {
 			return [];
 		}

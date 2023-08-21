@@ -75,9 +75,7 @@ class HoldingService {
 			);
 		}
 		const historicalPrices: HistoricalQuote[] =
-			await stockDataFetcher.getHistoricalPrices(
-				holding.ticker_symbol
-			);
+			await stockDataFetcher.getStockCandles(holding.ticker_symbol);
 		const metrics = await stockDataFetcher.getMetrics(
 			holding.ticker_symbol
 		);
