@@ -1,0 +1,163 @@
+* {
+	padding: 0px;
+}
+body {
+	position: relative;
+	min-height: 100vh;
+	padding-bottom: 80px; /* Adjust the padding to match the height of the footer */
+	background-color: #ffffff;
+	/* color: white; */
+}
+
+.ticker-arrow {
+	/* Add initial position */
+	position: relative;
+	right: 0;
+	/* Add transition property with duration */
+	transition: right 0.2s ease-out;
+}
+
+/* Add hover styles to change the position only on the .ticker-arrow inside the hovered <th> */
+th:hover .ticker-arrow {
+	right: -5px; /* Adjust the value to control the leftward motion */
+}
+.ticker-header:hover {
+	text-decoration: underline;
+	color: rgb(0, 117, 251);
+}
+
+perspective-viewer {
+	height: 50vh;
+	width: 100%;
+	position: relative;
+	top: 0;
+	left: 0;
+}
+
+.footer {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
+
+.footer > div > p {
+	color: white;
+}
+
+.graph {
+	width: 100%;
+	height: auto;
+	margin: 0px;
+}
+
+/* nav {
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+} */
+
+.news {
+	max-height: 50vh;
+	overflow-y: auto;
+}
+
+.news-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	border: 1px solid rgb(176, 176, 176);
+	border-radius: 10px;
+	padding: 20px;
+	background-color: rgba(
+		186,
+		186,
+		186,
+		0.8
+	); /* Slightly more opaque background */
+	backdrop-filter: blur(20px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Reduced box-shadow */
+	max-width: 500px; /* Limit maximum width */
+	margin: 10px; /* Add some margin between news cards */
+}
+
+.performance-viewer {
+	background-color: rgba(
+		225,
+		225,
+		225,
+		0.6
+	); /* Slightly more opaque background */
+	backdrop-filter: blur(20px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Reduced box-shadow */
+	padding: 20px;
+	border-radius: 20px;
+}
+
+.news-card-img img {
+	max-width: 100%; /* Ensure image fits within its container */
+	border-radius: 5px; /* Add a slight border radius to the image */
+}
+
+.news-card-body {
+	text-align: center;
+	margin-top: 10px; /* Add space between image and text */
+}
+
+.news-card-title {
+	color: white;
+	font-weight: bold;
+	font-size: 1.2rem;
+	margin-bottom: 5px; /* Add space between title and summary */
+}
+
+.news-card-text {
+	font-size: 0.9rem;
+	color: white;
+	line-height: 1.4; /* Improve line spacing for readability */
+}
+
+.news::-webkit-scrollbar {
+	width: 8px; /* Adjust the width as per your preference */
+}
+
+.news::-webkit-scrollbar-track {
+	background: #f1f1f1; /* Background color of the track */
+}
+
+.news::-webkit-scrollbar-thumb {
+	background: #888; /* Color of the scroll thumb */
+	border-radius: 4px; /* Rounded ends of the scroll thumb */
+}
+
+.news::-webkit-scrollbar-thumb:hover {
+	background: #555; /* Color of the scroll thumb on hover */
+}
+
+.details-row > p {
+	display: inline;
+}
+
+.position-detail {
+	border: 1px solid grey;
+	border-radius: 10px;
+	padding: 25px;
+	background-color: #242526;
+	color: white;
+}
+
+.position-stats {
+	text-align: center;
+}
+/* 
+.search-bar input,
+.search-bar button {
+	background-color: rgba(255, 255, 255, 0.2);
+} */
+
+.account-info > p {
+	display: inline;
+	margin-right: 10px;
+}
+
+.button {
+	min-width: 100%;
+}
