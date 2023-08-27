@@ -66,6 +66,9 @@ jobs:
       
     - name: Run Migrations, Generate Types, and Run Tests
       run: |
+        echo $POSTGRES_HOST
+        echo $POSTGRES_USER
+        echo $POSTGRES_PASSWORD
         npm run migrate:up
         npm run generate:types
         npm tests
