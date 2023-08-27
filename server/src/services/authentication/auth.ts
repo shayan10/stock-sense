@@ -2,7 +2,9 @@ import { TokenBlacklist } from "./TokenBlacklist";
 import { TokenService } from "./TokenService";
 import { UserRepo } from "../users/UserRepo";
 import { AuthRepo } from "./AuthRepo";
-import { AuthController } from "./AuthController";
+import { AuthController, RequiredUserProps } from "./AuthController";
+
+interface User extends RequiredUserProps {}
 
 if (!process.env.JWT_SECRET) {
 	throw new Error("JWT_SECRET is not defined");
@@ -18,6 +20,6 @@ export const tokenService = new TokenService(
 );
 
 const userRepo = new UserRepo();
-const authRepo = new AuthRepo(userRepo);
+const authRepo = new AuthRepo<User>(userRepo);
 
 export const authController = new AuthController(tokenService, authRepo);

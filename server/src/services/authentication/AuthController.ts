@@ -5,7 +5,7 @@ import { compare } from "bcrypt";
 
 export type TokenPair = { accessToken: string; refreshToken: string };
 
-interface RequiredUserProps {
+export interface RequiredUserProps {
 	id: number;
 	username: string;
 	password: string;
