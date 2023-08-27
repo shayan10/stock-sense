@@ -17,27 +17,88 @@ StockSense is an application that allows users to integrate their investment acc
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation](#installation)
 - [Usage](#usage)
-- [Features](#features)
 - [Screenshots](#screenshots)
 - [UML Diagrams](#uml-diagrams)
 - [Limitations](#limitations)
 - [Future Improvements](#future-improvements)
 
-## Installation
+## Usage
 
 **Prerequisite**: Please make sure to have a Plaid API Key ready. You can get your free API Key [here](https://dashboard.plaid.com/signup)
 
-Step-by-step instructions on how to set up and install the project locally.
+### Running the Node.js Backend
 
-## Usage
+1. First clone this repository and navigate to server/:
+```
+  git clone https://github.com/shayan10/stock-sense.git
+  # Navigate to server/
+  cd server
+  # Install dependencies
+  npm install
+```
 
-Instructions on how to use your project. Include any command-line instructions, endpoints for APIs, or user interactions for a UI.
+2. Create a `.env` file with the following information. The `DATABASE_URL` variable is required locally for the `node-pg-migrate` module.
 
-## Features
+Here is an example template of the `.env` file: 
 
-Highlight the key features of your project. You can use bullet points or descriptions.
+```bash
+  POSTGRES_HOST=localhost
+  POSTGRES_DB=name
+  POSTGRES_USER=johndoe
+  POSTGRES_PASSWORD=helloWorld
+  POSTGRES_PORT=5432
+  DATABASE_URL=postgres://POSTGRES_USER:POSTGRES_PASSWORD@localhost/POSTGRES_DB
+  JWT_SECRET=example-key
+  PORT=3000
+  PLAID_CLIENT_ID=example-key
+  PLAID_CLIENT_SECRET=example-key
+  FINNHUB_API_KEY=example-key
+```
+
+If you would like to run this project locally, please make sure you have a running instance of PostgreSQL and Redis on your system.
+Otherwise, you can run this project using Docker.
+
+```
+  # Sets up the PostgreSQL and Redis containers
+  docker-compose up -d
+```
+
+3. Then, run the following commands:
+```bash
+  # To run the migrations
+  npm run migrate:up
+  # Generating the TypeScript definitions from the Database Tables
+  npm run generate:types
+  # Then, start the server
+  npm run dev
+```
+
+You should then see this result:
+```bash
+> stock-sense@1.0.0 dev
+> nodemon
+
+[nodemon] 2.0.22
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): src/**/*
+[nodemon] watching extensions: ts,json
+[nodemon] starting `ts-node ./src/index.ts`
+Connected to redis!
+Connected to Postgres!
+Server started on port 3000
+```
+### Running the React App
+1. Navigate to the `client/` directory in a separate window
+  ```
+    cd client/
+  ```
+2. Install the dependencies
+   ```
+   npm install
+   ```
+3. Run `npm start`
+
 
 ## Screenshots
 
