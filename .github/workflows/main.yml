@@ -12,59 +12,68 @@ defaults:
     working-directory: server
     
 jobs:
-
-  setup-postgres:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: yourusername
-          POSTGRES_PASSWORD: yourpassword
-          POSTGRES_DB: yourdbname
-        ports:
-          - 5432:5432
-    steps:
-    - name: Wait for PostgreSQL
-      run: |
-        dockerize -wait tcp://localhost:5432 -timeout 1m
-      env:
-        POSTGRES_HOST: localhost
-        POSTGRES_PORT: 5432
-        POSTGRES_DB: yourdbname
-        POSTGRES_USER: yourusername
-        POSTGRES_PASSWORD: yourpassword
-
-  setup-redis:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Start Redis
-      run: docker run --name redis-container -p 6379:6379 -d redis:latest
-        
-  build:
+  container-build:
     # run build on latest ubuntu
     runs-on: ubuntu-latest
-
+      # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: yourdbname
+          POSTGRES_USER: yourusername
+          POSTGRES_PASSWORD: yourpassword
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+      redis:
+        # Docker Hub image
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
+    
     steps:
     # for checking out the branch (https://github.com/actions/checkout#Push-a-commit-using-the-built-in-token)
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    
     # installing Node
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js 14.x
       uses: actions/setup-node@v1
-      env:
-        POSTGRES_HOST: localhost
-        POSTGRES_PORT: 5432
-        POSTGRES_DB: yourdbname
-        POSTGRES_USER: yourusername
-        POSTGRES_PASSWORD: yourpassword
-        REDIS_HOST: localhost
-        REDIS_PORT: 6379
       with:
         # this is regarding the matrix strategy specified above
         node-version: 14.x
-    # install dependencies
-    - run: ls -la
-    - run: npm install
-    # TODO: Add migrations
-    - run: npm run generate:types
-    - run: npm test
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run Migrations, Generate Types, and Run Tests
+      run: |
+        npm run migrate:up
+        npm run generate:types
+        npm tests
+      env:
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: test
+        POSTGRES_USER: test123
+        POSTGRES_PASSWORD: helloWorld
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
