@@ -71,7 +71,7 @@ jobs:
         echo $POSTGRES_PASSWORD
         npm run migrate:up
         npm run generate:types
-        npm tests
+        npm test
       env:
         POSTGRES_HOST: postgres
         POSTGRES_PORT: 5432
