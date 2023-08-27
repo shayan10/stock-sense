@@ -81,3 +81,4 @@ jobs:
         REDIS_HOST: localhost
         REDIS_PORT: 6379
         DATABASE_URL: postgres://test123:helloWorld@localhost/test
+        JWT_SECRET: afG8o7Qwg4hrr9hZpyllZp1k8Eo
