@@ -1,14 +1,11 @@
 import { QuoteContext } from "../../context/QuoteContext";
 import { AccountItem } from "../AccountItem";
 import AccountRow from "./AccountRow";
-import Pagination from "./Pagination";
 import { AccountProps } from "./types/AccountProps";
 import { useContext, useEffect, useState } from "react";
 
 const AccountViewer = ({
-	id,
 	account_name,
-	number_of_holdings,
 	holdings,
 }: AccountProps) => {
 	const [profit, setProfit] = useState(0);
@@ -42,7 +39,7 @@ const AccountViewer = ({
 	 }, [quotes]);
 
 	return (
-		<>
+		<div className="mb-5">
 			<h5>{account_name}</h5>
 			<table className="table table-striped table-hover">
 				<thead>
@@ -82,7 +79,8 @@ const AccountViewer = ({
 					<AccountItem num={profit} />
 				</div>
 			</div>
-		</>
+			<hr />
+		</div>
 	);
 };
 

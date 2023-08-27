@@ -26,7 +26,10 @@ export interface PaginationOptions {
 }
 
 export class HoldingRepo {
-	async insert(user_id: number, data: HoldingPayload[]) {
+	async insert(
+		user_id: number,
+		data: HoldingPayload[]
+	): Promise<HoldingPublicResponse[]> {
 		const holdings = data.map((holding: HoldingPayload) => {
 			return {
 				...holding,
@@ -37,13 +40,7 @@ export class HoldingRepo {
 		const results = await db
 			.insertInto("holdings")
 			.values(holdings)
-			.returning([
-				"id",
-				"account_id",
-				"quantity",
-				"ticker_symbol",
-				"cost_basis",
-			])
+			.returning(["id", "quantity", "ticker_symbol", "cost_basis"])
 			.execute();
 
 		return results;

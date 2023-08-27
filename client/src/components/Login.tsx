@@ -34,7 +34,7 @@ const Login = () => {
 		}
 		// Reset error state
 		setError('');
-	}, [username, password, auth.isAuthenticated, navigate])
+	}, [username, password])
 
 	return (
 		<div className="container mt-3">

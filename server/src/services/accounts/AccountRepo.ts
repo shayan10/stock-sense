@@ -24,7 +24,6 @@ export class AccountRepo {
 		const query = sql<AccountPublicResponse>`SELECT
 			accounts.id,
 			accounts.account_name,
-			COUNT(*) AS "number_of_holdings",
 			JSON_AGG(JSON_BUILD_OBJECT(
 				'id', holdings.id,
 				'account_id', holdings.account_id,

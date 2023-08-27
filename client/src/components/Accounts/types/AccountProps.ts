@@ -11,7 +11,6 @@ export interface Holding {
 export interface AccountProps {
 	id: number;
 	account_name: string;
-	number_of_holdings: number;
 	holdings: Holding[];
 	quotes: Quote;
 }

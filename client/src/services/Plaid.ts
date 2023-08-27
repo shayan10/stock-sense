@@ -20,7 +20,7 @@ export const exchangeAccessToken = async (
 
 export const initializeUserAccounts = async (axios: AxiosInstance) => {
 	const response = await axios.get("/plaid/initialize");
-	if (response.status !== 201) {
+	if (response.status !== 204) {
 		throw new Error("Error! Unable to fetch accounts");
 	}
 };

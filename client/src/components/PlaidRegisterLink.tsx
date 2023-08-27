@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
 	PlaidLinkOnExit,
 	PlaidLinkOnSuccess,
@@ -13,22 +13,31 @@ import {
 } from "../services/Plaid";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate } from "react-router-dom";
+import { AccountProps } from "./Accounts/types/AccountProps";
+import { fetchAccounts } from "../services/Accounts";
+import { QuoteContext } from "../context/QuoteContext";
 
-const PlaidRegisterLink = () => {
+const PlaidRegisterLink = ({
+	setLoading,
+	setAccounts,
+}: {
+	setLoading: (arg: boolean) => void;
+	setAccounts: (args: AccountProps[]) => void;
+}) => {
 	const axios = useAxiosPrivate();
-	const navigate = useNavigate();
 	const [linkToken, setLinkToken] = useState("");
 	const [errorMsg, setErrorMsg] = useState("");
-	const [isProcessing, setIsProcessing] = useState(false);
-	
+	const { refresh } = useContext(QuoteContext);
+
 	useEffect(() => {
+		setLoading(true);
 		fetchLinkToken(axios)
 			.then((token) => {
 				setLinkToken(token);
 				setErrorMsg("");
 			})
 			.catch((error) => setErrorMsg("Cannot fetch linked token"));
-		
+		setLoading(false); // Always set loading to false after fetching
 	}, []);
 
 	const onSuccessCallback = useCallback<PlaidLinkOnSuccess>(
@@ -37,14 +46,20 @@ const PlaidRegisterLink = () => {
 			metadata: PlaidLinkOnSuccessMetadata
 		) => {
 			try {
+				setLoading(true); // Set loading to true before async operations
+
 				await exchangeAccessToken(axios, public_token);
-				setIsProcessing(true);
-				initializeUserAccounts(axios).then(() => {
-					navigate("/dashboard");
-					setIsProcessing(false);
-				});
+
+				await initializeUserAccounts(axios);
+
+				const accounts = await fetchAccounts(axios);
+
+				setAccounts(accounts);
+				refresh();
 			} catch (error) {
 				setErrorMsg("Unable to retrieve your data from Plaid.");
+			} finally {
+				setLoading(false); // Always set loading to false after async operations
 			}
 		},
 		[]
@@ -52,13 +67,13 @@ const PlaidRegisterLink = () => {
 
 	const onExitCallback = useCallback<PlaidLinkOnExit>(
 		async (error, metadata) => {
-			// log and save error and metadata
-			// handle invalid link token
 			if (error != null && error.error_code === "INVALID_LINK_TOKEN") {
 				// generate new link token
 				try {
+					setLoading(true);
 					const newLinkToken = await fetchLinkToken(axios);
 					setLinkToken(newLinkToken);
+					setLoading(false);
 				} catch (error) {
 					setErrorMsg("Unable to connect to plaid");
 				}
@@ -74,30 +89,24 @@ const PlaidRegisterLink = () => {
 		token: linkToken,
 		//required for OAuth; if not using OAuth, set to null or omit:
 		receivedRedirectUri: undefined,
-		env: "sandbox"
+		env: "sandbox",
 	};
 
 	const { open, ready } = usePlaidLink(config);
 
 	return (
 		<>
-			{isProcessing ? (
-				<div className="spinner-border text-center" role="status">
-					<span className="sr-only"></span>
-				</div>
-			) : (
-				<p className="text-center">
-					Looks like you have not registered with Plaid yet.
-					<button
-						disabled={!ready && errorMsg !== ""}
-						onClick={(e) => open()}
-						className="text-decoration-underline"
-						style={{ color: "blue" }}
-					>
-						Click here to start the process
-					</button>
-				</p>
-			)}
+			<p className="text-center">
+				Looks like you have not registered with Plaid yet.
+				<button
+					disabled={!ready && errorMsg !== ""}
+					onClick={(e) => open()}
+					className="text-decoration-underline"
+					style={{ color: "blue" }}
+				>
+					Click here to start the process
+				</button>
+			</p>
 		</>
 	);
 };

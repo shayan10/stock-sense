@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }: any) => {
 	};
 
 	const logout = () => {
-		console.log("Logout called");
 		axiosPrivate.get("/auth/logout").then(() => {
 			removeToken();
 		})

@@ -1,20 +1,13 @@
 import { Holding, Security } from "plaid";
 import { HoldingPayload } from "../../holdings/HoldingSchema";
 import { AccountMap } from "./AccountAdapter";
-import { HoldingRepo } from "../../holdings/HoldingRepo";
+import { HoldingPublicResponse, HoldingRepo } from "../../holdings/HoldingRepo";
 
 interface IHoldingRepo {
 	insert(
 		user_id: number,
 		data: HoldingPayload[]
-	): Promise<
-		{
-			account_id: number;
-			ticker_symbol: string;
-			quantity: number;
-			cost_basis: number;
-		}[]
-	>;
+	): Promise<HoldingPublicResponse[]>;
 }
 
 type SecurityMap = Map<string, string>;

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { QuoteProvider } from "../context/QuoteContext";
 import HoldingsViewer from "./HoldingsViewer";
 import Performance from "./Performance";
-import SearchBar from "./SearchBar";
 import { AccountProps } from "./Accounts/types/AccountProps";
 import { fetchAccounts } from "../services/Accounts";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
@@ -21,7 +20,7 @@ const Dashboard = () => {
 		<div className="container">
 			<QuoteProvider>
 				<Performance />
-				<HoldingsViewer accounts={accounts}/>
+				<HoldingsViewer accounts={accounts} setAccounts={setAccounts}/>
 			</QuoteProvider>
 		</div>
 	);

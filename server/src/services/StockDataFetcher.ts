@@ -1,6 +1,6 @@
 import axios from "axios";
 import yahooFinance from "yahoo-finance2";
-import { DateTime } from "luxon";
+import { DateTime, IANAZone } from "luxon";
 import _ from "lodash";
 
 import { redisClient } from "../db/Redis";
@@ -193,11 +193,52 @@ class StockDataFetcher {
 
 	async getStockCandles(ticker_symbol: string): Promise<HistoricalQuote[]> {
 		try {
-			const endDate = DateTime.now();
-			const startDate = endDate.minus({ days: 3 });
+			const estZone = IANAZone.create("America/New_York");
+			const now = DateTime.now().setZone(estZone); // Set timezone to EST
+
+			let endDate = now;
+			let startDate = endDate;
+
+			if (now.weekday === 6) {
+				// Saturday: Data from 7 AM EST on Wednesday to 6 PM EST on Friday
+				startDate = now.minus({ days: 3 }).set({
+					hour: 7,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				});
+				endDate = now.minus({ days: 1 }).set({
+					hour: 18,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				});
+			} else if (now.weekday === 7) {
+				// Sunday: Data from 7 AM EST on Wednesday to 6 PM EST on Friday
+				startDate = now.minus({ days: 4 }).set({
+					hour: 7,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				});
+				endDate = now.minus({ days: 2 }).set({
+					hour: 18,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				});
+			} else {
+				// Weekday: Data from 7 AM EST of the day before to the current time
+				startDate = now.minus({ days: 2 }).set({
+					hour: 7,
+					minute: 0,
+					second: 0,
+					millisecond: 0,
+				});
+			}
 
 			const response = await axios.get(
-				`https://finnhub.io/api/v1/stock/candle?symbol=${ticker_symbol}&resolution=1&from=${startDate.toUnixInteger()}&to=${endDate.toUnixInteger()}`,
+				`https://finnhub.io/api/v1/stock/candle?symbol=${ticker_symbol}&resolution=15&from=${startDate.toSeconds()}&to=${endDate.toSeconds()}`,
 				{
 					headers: {
 						"X-Finnhub-Token": this.API_KEY,
@@ -207,7 +248,7 @@ class StockDataFetcher {
 
 			const data = response.data as RawCandle;
 
-			if (data.s != "ok") {
+			if (data.s !== "ok") {
 				return [];
 			}
 

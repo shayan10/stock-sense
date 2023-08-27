@@ -7,6 +7,7 @@ import { HoldingProps } from "./types/HoldingProps";
 import NewsItem from "./NewsItem";
 import HoldingInfo from "./HoldingInfo";
 import Graph from "../Graphs/Graph";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const HoldingDetail = () => {
 	const { id } = useParams();
@@ -31,8 +32,15 @@ const HoldingDetail = () => {
 	}, []);
 
 	return (
-		<div className="container-xxl mt-3" style={{maxWidth: window.innerWidth > 1500 ? "1500px" : "none"}}>
-			{error === "" && holdingData ? (
+		<div
+			className="container mt-3"
+			style={{
+				maxWidth: window.innerWidth > 1500 ? "1500px" : "none",
+			}}
+		>
+			{error !== "" ? (
+				<h2 className="text-center">{error}</h2>
+			) : holdingData ? (
 				<>
 					<div className="row">
 						<HoldingInfo {...holdingData} />
@@ -42,14 +50,36 @@ const HoldingDetail = () => {
 							</div>
 						</div>
 						<div className="mt-3 d-md-block col-xl-4 news">
-						{holdingData ? holdingData.news.map((news) => <NewsItem key={news.headline} {...news} />): <h2>Loading...</h2> }
+							{holdingData ? (
+								holdingData.news.map((news) => (
+									<NewsItem
+										key={news.headline}
+										{...news}
+									/>
+								))
+							) : (
+								<h2>Loading...</h2>
+							)}
 						</div>
 					</div>
 					<hr />
-					{holdingData ? <PerformanceViewer {...holdingData} /> : <h2>Loading...</h2> }
-					
+					{holdingData ? (
+						<PerformanceViewer {...holdingData} />
+					) : (
+						<h2>Loading...</h2>
+					)}
 				</>
-			): <h2 className="text-center">{error}</h2>}
+			) : (
+				<div
+					style={{
+						width: "100px",
+						margin: "auto",
+						display: "block",
+					}}
+				>
+					<ClipLoader color="#52bfd9" size={100} />
+				</div>
+			)}
 		</div>
 	);
 };

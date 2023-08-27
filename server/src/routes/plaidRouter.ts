@@ -54,14 +54,14 @@ router.get("/initialize", async (req: Request, res: Response) => {
 			user_id.toString(),
 			investments.accounts
 		);
-		const holdings = await holdingAdapter.saveHoldings(
+		await holdingAdapter.saveHoldings(
 			user_id,
 			investments.holdings,
 			investments.securities,
 			accountMap
 		);
 
-		res.status(201).send({ holdings });
+		res.status(204).send();
 	} catch (error) {
 		console.log(error);
 		res.status(400).send(error);

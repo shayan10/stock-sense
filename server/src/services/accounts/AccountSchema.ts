@@ -16,7 +16,6 @@ const accountSchema = z.object({
 export interface AccountPublicResponse {
 	id: number;
 	account_name: string;
-	total_holdings: number;
 	holdings: HoldingPublicResponse[];
 }
 

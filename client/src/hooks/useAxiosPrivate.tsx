@@ -1,12 +1,14 @@
 import { axiosPrivate } from "../api/axios";
-import { useContext, useEffect} from "react";
+import { useContext, useEffect, useRef} from "react";
 import useRefreshToken from "./useRefreshToken";
 import AuthContext from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const useAxiosPrivate = () => {
 	const refresh = useRefreshToken();
-	const { auth } = useContext(AuthContext);
-	//const navigate = useNavigate();
+	const { auth, removeToken } = useContext(AuthContext);
+	const navigate = useNavigate();
+	const isRefreshing = useRef(false);
 
 	// Setup the interceptors only once during initialization
 	useEffect(() => {
@@ -26,17 +28,23 @@ const useAxiosPrivate = () => {
 			(response) => response,
 			async (error) => {
 				const prevRequest = error?.config;
-				// console.log(prevRequest);
 				if (error?.response?.status === 401 && !prevRequest?.sent && prevRequest.url !== "/auth/refresh") {
 					prevRequest.sent = true;
 					
-					try {
-						const newAccessToken = await refresh() as string;
-						prevRequest.headers["Authorization"] =
-							newAccessToken;
-						return axiosPrivate(prevRequest);
-					} catch (error) {
-						return Promise.reject(error);
+					if (!isRefreshing.current) {
+						isRefreshing.current = true;
+						try {
+							const newAccessToken = await refresh() as string;
+							prevRequest.headers["Authorization"] =
+								newAccessToken;
+							isRefreshing.current = false;
+							return axiosPrivate(prevRequest);
+						} catch (error) {
+							removeToken();
+							navigate("/login");
+							isRefreshing.current = false;
+							return Promise.reject(error);
+						}
 					}
 
 				}
@@ -49,20 +57,9 @@ const useAxiosPrivate = () => {
 			axiosPrivate.interceptors.request.eject(requestIntercept);
 			axiosPrivate.interceptors.response.eject(responseIntercept);
 		};
-	}, [auth]);
+	}, []);
 
 	return axiosPrivate;
 };
-
-								// refresh().then((token) => {
-					// 	prevRequest.headers["Authorization"] =
-					// 	token;
-					// 	return axiosPrivate(prevRequest);
-					// }).catch((error) => {
-					// 	console.log("")
-					// 	removeToken();
-					// 	return error;
-					// })
-					
 
 export default useAxiosPrivate;
