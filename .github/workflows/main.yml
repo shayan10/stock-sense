@@ -1,0 +1,83 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-node:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+
+  setup-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: yourusername
+          POSTGRES_PASSWORD: yourpassword
+          POSTGRES_DB: yourdbname
+        ports:
+          - 5432:5432
+      options:
+        # Use Docker layer caching for the PostgreSQL image
+        docker-layer-caching: true
+    steps:
+    - name: Wait for PostgreSQL
+      run: |
+        dockerize -wait tcp://localhost:5432 -timeout 1m
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: yourdbname
+        POSTGRES_USER: yourusername
+        POSTGRES_PASSWORD: yourpassword
+
+  setup-redis:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+      options:
+        # Use Docker layer caching for the Redis image
+        docker-layer-caching: true
+
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+
+    - name: Install server dependencies
+      working-directory: server
+      run: npm install
+
+    - name: Run server tests
+      working-directory: server
+      run: npm test
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: yourdbname
+        POSTGRES_USER: yourusername
+        POSTGRES_PASSWORD: yourpassword
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
