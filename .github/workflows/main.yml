@@ -65,4 +65,6 @@ jobs:
     # install dependencies
     - run: ls -la
     - run: npm install
+    # TODO: Add migrations
+    - run: npm run generate:types
     - run: npm test
