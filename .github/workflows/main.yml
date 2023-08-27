@@ -38,6 +38,9 @@ jobs:
       - name: Navigate to server directory
         run: cd server
 
+      - name: Print working dir
+        run: pwd
+
       - name: Install server dependencies
         run: npm install
 
