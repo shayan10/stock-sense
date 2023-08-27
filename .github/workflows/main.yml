@@ -23,11 +23,11 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_HOST: localhost
+          POSTGRES_HOST: "postgres"
           POSTGRES_PORT: 5432
-          POSTGRES_DB: yourdbname
-          POSTGRES_USER: yourusername
-          POSTGRES_PASSWORD: yourpassword
+          POSTGRES_DB: "yourdbname"
+          POSTGRES_USER: "yourusername"
+          POSTGRES_PASSWORD: "yourpassword"
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -70,10 +70,10 @@ jobs:
         npm run generate:types
         npm tests
       env:
-        POSTGRES_HOST: postgres
+        POSTGRES_HOST: "postgres"
         POSTGRES_PORT: 5432
-        POSTGRES_DB: test
-        POSTGRES_USER: test123
-        POSTGRES_PASSWORD: helloWorld
+        POSTGRES_DB: "test"
+        POSTGRES_USER: "test123"
+        POSTGRES_PASSWORD: "helloWorld"
         REDIS_HOST: localhost
         REDIS_PORT: 6379
