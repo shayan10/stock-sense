@@ -41,26 +41,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Print
-      run: ls -la
-      
-    - name: Go to server dir
-      run: cd server
-    
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Print
+      run: ls -la
+      
     - name: Setup Node.js environment
       uses: actions/setup-node@v3.8.1
       with:
-        # Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.
         node-version: 18.x
         cache: npm
-    
+
     - name: Install server dependencies
+      working-directory: server
       run: npm install
 
     - name: Run server tests
+      working-directory: server
       run: npm test
       env:
         POSTGRES_HOST: localhost
