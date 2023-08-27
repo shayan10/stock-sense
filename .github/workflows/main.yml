@@ -44,15 +44,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Print
-      run: ls -la
-
     - name: Setup Node.js environment
       uses: actions/setup-node@v3.8.1
       with:
-        working-directory: server
         node-version: 18.x
         cache: npm
+
+    - name: Print
+      working-directory: server
+      run: ls -la
 
     - name: Install server dependencies
       working-directory: server
@@ -65,7 +65,5 @@ jobs:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
         POSTGRES_DB: yourdbname
-        POSTGRES_USER: yourusername
         POSTGRES_PASSWORD: yourpassword
-        REDIS_HOST: localhost
-        REDIS_PORT: 6379
+        
