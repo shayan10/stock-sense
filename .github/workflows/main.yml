@@ -12,14 +12,39 @@ defaults:
     working-directory: server
     
 jobs:
+  setup-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: yourusername
+          POSTGRES_PASSWORD: yourpassword
+          POSTGRES_DB: yourdbname
+        ports:
+          - 5432:5432
+    steps:
+    - name: Wait for PostgreSQL
+      run: |
+        dockerize -wait tcp://localhost:5432 -timeout 1m
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: yourdbname
+        POSTGRES_USER: yourusername
+        POSTGRES_PASSWORD: yourpassword
+
+  setup-redis:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        
   build:
     # run build on latest ubuntu
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        # Run build for both Node version 12 and version 14
-        node-version: [14.x]
 
     steps:
     # for checking out the branch (https://github.com/actions/checkout#Push-a-commit-using-the-built-in-token)
@@ -27,12 +52,18 @@ jobs:
     # installing Node
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: yourdbname
+        POSTGRES_USER: yourusername
+        POSTGRES_PASSWORD: yourpassword
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
       with:
         # this is regarding the matrix strategy specified above
-        node-version: ${{ matrix.node-version }}
+        node-version: 14.x
     # install dependencies
     - run: ls -la
-    - run: npm ci
-    # build the project if necessary
-    - run: npm run build --if-present
+    - run: npm install
     - run: npm test
