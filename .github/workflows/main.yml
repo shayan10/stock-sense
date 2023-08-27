@@ -23,11 +23,11 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_HOST: "postgres"
+          POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
-          POSTGRES_DB: "yourdbname"
-          POSTGRES_USER: "yourusername"
-          POSTGRES_PASSWORD: "yourpassword"
+          POSTGRES_DB: test
+          POSTGRES_USER: test123
+          POSTGRES_PASSWORD: helloWorld
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -55,11 +55,11 @@ jobs:
     - uses: actions/checkout@v3
     
     # installing Node
-    - name: Use Node.js 14.x
+    - name: Use Node.js 18.x
       uses: actions/setup-node@v1
       with:
         # this is regarding the matrix strategy specified above
-        node-version: 14.x
+        node-version: 18.x
         
     - name: Install dependencies
       run: npm install
@@ -70,10 +70,10 @@ jobs:
         npm run generate:types
         npm tests
       env:
-        POSTGRES_HOST: "postgres"
+        POSTGRES_HOST: postgres
         POSTGRES_PORT: 5432
-        POSTGRES_DB: "test"
-        POSTGRES_USER: "test123"
-        POSTGRES_PASSWORD: "helloWorld"
+        POSTGRES_DB: test
+        POSTGRES_USER: test123
+        POSTGRES_PASSWORD: helloWorld
         REDIS_HOST: localhost
         REDIS_PORT: 6379
