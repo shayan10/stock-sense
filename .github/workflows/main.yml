@@ -36,7 +36,7 @@ jobs:
           node-version: 14
 
       - name: Navigate to server directory
-        run: cd server
+        run: cd ~/server
 
       - name: Print working dir
         run: pwd
