@@ -12,6 +12,7 @@ defaults:
     working-directory: server
     
 jobs:
+
   setup-postgres:
     runs-on: ubuntu-latest
     services:
@@ -36,11 +37,9 @@ jobs:
 
   setup-redis:
     runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
+    steps:
+    - name: Start Redis
+      run: docker run --name redis-container -p 6379:6379 -d redis:latest
         
   build:
     # run build on latest ubuntu
