@@ -25,12 +25,17 @@ StockSense is an application that allows users to integrate their investment acc
 
 ## Usage
 
-**Prerequisite**: Please make sure to have a Plaid API Key ready. You can get your free API Key [here](https://dashboard.plaid.com/signup)
-
+**Prerequisites**:
+  - Please make sure to have a Plaid API Key ready. You can get your free API Key [here](https://dashboard.plaid.com/signup)
+  - Please ensure you have Node Version Manager (nvm) and the TypeScript Compiler installed. You can verify both are installed by running these commands:
+    ```bash
+      nvm -v  # To verify nvm installation
+      tsc -v  # To verify tsc installation
+    ```
 ### Running the Node.js Backend
 
 1. First clone this repository and navigate to server/:
-```
+```bash
   git clone https://github.com/shayan10/stock-sense.git
   # Navigate to server/
   cd server
@@ -59,7 +64,7 @@ Here is an example template of the `.env` file:
 If you would like to run this project locally, please make sure you have a running instance of PostgreSQL and Redis on your system.
 Otherwise, you can run this project using Docker.
 
-```
+```bash
   # Sets up the PostgreSQL and Redis containers
   docker-compose up -d
 ```
@@ -89,14 +94,9 @@ Connected to Postgres!
 Server started on port 3000
 ```
 ### Running the React App
-1. Navigate to the `client/` directory in a separate window
-  ```
-    cd client/
-  ```
-2. Install the dependencies
-   ```
-   npm install
-   ```
+1. Navigate to the `client/` directory in a separate window: `cd client/`
+
+2. Install the dependencies: `npm install`
 3. Run `npm start`
 
 
