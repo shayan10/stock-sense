@@ -40,7 +40,13 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
 
-    steps:        
+    steps:
+    - name: Print
+      run: ls -la
+      
+    - name: Go to server dir
+      run: cd server
+    
     - name: Checkout code
       uses: actions/checkout@v2
 
@@ -52,12 +58,10 @@ jobs:
         cache: npm
     
     - name: Install server dependencies
-      working-directory: server
       run: npm install
 
     - name: Run server tests
       run: npm test
-      working-directory: server
       env:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
