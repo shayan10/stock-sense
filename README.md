@@ -108,6 +108,12 @@ Include screenshots or GIFs showcasing the user interface or different aspects o
 
 Include UML diagrams to visualize the architecture, relationships between components, or design patterns used.
 
+## Optimizations
+
+## Challenges
+
+## Limitations
+
 ## Limitations
 
 List any known limitations or areas where the project could be improved.
