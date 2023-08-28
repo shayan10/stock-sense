@@ -152,7 +152,7 @@ Include UML diagrams to visualize the architecture, relationships between compon
   ]
 }
 ```
-Here is the pseudocode implementation of this idea. To see the TypeScript implementation, click [here]().
+Here is the pseudocode implementation of this idea. To see the TypeScript implementation, click [here](https://github.com/shayan10/stock-sense/blob/main/server/src/services/plaid/adapters/HoldingsAdapter.ts).
 
 ```
     method parseAccountData(data: Accounts[]): AccountPayload
@@ -346,26 +346,24 @@ export const getCurrentChange = (
 };
 
 ```
-Link to the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts)
+Link to the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
 ## Challenges
 
 ## Limitations
 
-List any known limitations or areas where the project could be improved.
+- The Finnhub Free Tier only allows data retrieval for U.S. equities, excluding mutual funds, bonds, and other such assets. Since this data is currently not available, only U.S. stocks are considered
+- While both Plaid and Finnhub return cryptocurrency data, I have found the data returned from Plaid around cryptocurrencies to be incosistent, since it may either be marked as a `cryptocurrency`, `currency`, or `other`, with the `ticker_symbol` returned having varying formats, making it difficult to parse.
 
 ## Future Improvements
 
-Suggest potential future enhancements or features that could be added to the project.
-
+- I would like the ability to have asynchronous updates to a user's portfolio. Plaid does offer this capability and is something I would like to implement in the future. My current working solution is to have a webhook that is triggered whenever there is an update, and this information is then given to a message queue such as **RabbitMQ** to asynchronously update the database.
+- Although mentioned in the limitations, I would like to implement the functionality neccessary to allow users to add cryptocurrencies to their portfolio. Due to time constraints I was not able to implement this feature, but this is one I definitely want to implement.
 ## Demo
 
 Provide a link to the live demo of your project if available.
 
 ## Contact
 
-If you have any questions or feedback, feel free to contact me at [your@email.com](mailto:your@email.com).
+If you have any questions or feedback, feel free to contact me at [shayankhan28@gmail.com](shayankhan28@gmail.com).
 
----
-
-Licensed under the [MIT License](LICENSE).
