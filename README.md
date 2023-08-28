@@ -1,5 +1,14 @@
 # StockSense
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Screenshots](#screenshots)
+- [Usage](#usage)
+- [UML Diagrams](#uml-diagrams)
+- [Limitations](#limitations)
+- [Future Improvements](#future-improvements)
+
 ## Overview
 
 StockSense is an application that allows users to integrate their investment accounts and track their portfolio performance in real-time. Some of the key features include:
@@ -14,14 +23,10 @@ StockSense is an application that allows users to integrate their investment acc
 
 **Technologies Used:** TypeScript, Node.js, React.js, Socket.IO, WebSockets, PostgreSQL, Redis, Kysely, Jest.
 
-## Table of Contents
 
-- [Overview](#overview)
-- [Usage](#usage)
-- [Screenshots](#screenshots)
-- [UML Diagrams](#uml-diagrams)
-- [Limitations](#limitations)
-- [Future Improvements](#future-improvements)
+## Screenshots
+
+Include screenshots or GIFs showcasing the user interface or different aspects of your project.
 
 ## Usage
 
@@ -99,20 +104,127 @@ Server started on port 3000
 2. Install the dependencies: `npm install`
 3. Run `npm start`
 
-
-## Screenshots
-
-Include screenshots or GIFs showcasing the user interface or different aspects of your project.
-
 ## UML Diagrams
 
 Include UML diagrams to visualize the architecture, relationships between components, or design patterns used.
 
 ## Optimizations
 
-## Challenges
+- Reduced the time complexity of inserting user transactions into the Database from  ***O(n<sup>3</sup>)*** to ***O(n)*** utilizing HashMaps
 
-## Limitations
+Each investment a user has belongs to an account, has some quantity and cost basis, and is a type of security. With this information located in three separate arrays, the naive implementation of inserting these into the SQL Database was **O(n<sup>3</sup>)**. However, since each holding also consists of a unique account ID and security ID, this insertion can be simplified to **O(n)** time by utilizing hash maps. 
+
+```json
+{
+  "accounts": [
+    {
+      "account_id": "5Bvpj4QknlhVWk7GygpwfVKdd133GoCxB814g",
+      "balances": {
+        ...
+      },
+      "name": "Plaid Brokerage",
+      "official_name": "Plaid Brokerage",
+      "subtype": "brokerage",
+      "type": "investment"
+    },
+  ],
+  "holdings": [
+    {
+      "account_id": "JqMLm4rJwpF6gMPJwBqdh9ZjjPvvpDcb7kDK1",
+      "cost_basis": 1,
+      "quantity": 0.01,
+      "security_id": "d6ePmbPxgWCWmMVv66q9iPV94n91vMtov5Are",
+    },
+  ],
+  "securities": [
+    {
+      ...
+      "iso_currency_code": "USD",
+      "name": "Amazon Inc.",
+      "proxy_security_id": null,
+      "security_id": "d6ePmbPxgWCWmMVv66q9iPV94n91vMtov5Are",
+      "sedol": null,
+      "ticker_symbol": "AMZN",
+      "type": "equity"
+    }
+  ]
+}
+```
+Here is the pseudocode implementation of this idea. To see the TypeScript implementation, click [here]().
+
+```
+    method parseAccountData(data: Accounts[]): AccountPayload
+        accounts := new array of AccountPayload
+        for each account in data
+            if account.account_id and account.name
+                accounts.push({
+                    plaid_account_id: account.account_id,
+                    account_name: account.name
+                })
+            end if
+        end for
+        return accounts
+    end method
+
+    method saveAccounts(user_id: string, data: array of AccountBase): AccountMap
+        parsedAccounts := parseAccountData(data)
+        result := accountRepo.insert(parseInt(user_id), parsedAccounts)
+
+        map := new AccountMap
+        for each obj in result
+            map.set(obj.plaid_account_id, obj.id)
+        end for
+
+        return map
+    end method
+
+    method parseSecurities(securities: Security[]): SecurityMap
+        map := new SecurityMap
+        for each security in securities
+           map.set(security.security_id, security.ticker_symbol) 
+        end for
+        return map
+    end method
+
+    method parseHoldings(data: Holding[], securityMap: SecurityMap, accountMap: AccountMap): HoldingPayload[]
+        holdings = []
+        for each holding in data
+            // Get Account ID using the Map
+            account_id := accountMap.get(holding.account_id)
+            // Get Ticker Symbol using the Map
+            ticker_symbol := securityMap.get(holding.security_id)
+            // If properties defined, then add to array
+            if account_id and ticker_symbol and holding.quantity and holding.cost_basis
+                holdings.push({
+                    account_id,
+                    plaid_account_id: holding.account_id,
+                    ticker_symbol,
+                    cost_basis: holding.cost_basis,
+                    quantity: holding.quantity
+                })
+            end if
+        end for
+        return holdings
+    end method
+
+
+    method saveHoldings(user_id: string, holdings: Holding[], securities: Security[], accountMap: AccountMap)
+        securityMap := parseSecurities(securities)
+        parsedHoldings := parseHoldings(holdings, securityMap, accountMap)
+
+        if parsedHoldings.length == 0
+            return []
+        end if
+	      // Insert into Database
+        result := insert(parseInt(user_id), parsedHoldings)
+        return result
+    end method
+```
+
+- Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
+- Precomputed the total position size (cost basis x quantity) for each ticker symbol to efficiently compute the % change (current and total)
+
+## Challenges
 
 ## Limitations
 
