@@ -5,7 +5,8 @@
 - [Overview](#overview)
 - [Screenshots](#screenshots)
 - [Usage](#usage)
-- [UML Diagrams](#uml-diagrams)
+- [Architecture](#architecture)
+- Challenges (#challenges)
 - [Limitations](#limitations)
 - [Future Improvements](#future-improvements)
 
@@ -104,9 +105,21 @@ Server started on port 3000
 2. Install the dependencies: `npm install`
 3. Run `npm start`
 
-## UML Diagrams
+## Architecture
 
-Include UML diagrams to visualize the architecture, relationships between components, or design patterns used.
+The application was primarily seperated into authentication and Plaid-related services, with the authentication service responsible for managing user credentials such as passwords and issuing tokens, while the Plaid services primarily worked to retrieve user data and store in the PostgreSQL database for further processing.
+
+### Authentication Service
+
+Here is a summary of the responsibilities of each component:
+
+- `TokenService`: This is responsible for issuing user access and refresh tokens, refreshing and rotating the user's access and refresh tokens, verifying the validity of user tokens, and delegates to the `TokenBlacklist` to revoke user tokens.
+- `TokenBlacklist`: This revokes the user's access and refresh tokens to prevent relay attacks. The blacklist works by storing the user's token in a Redis cache for its remaining validity period, after which it is evicted from the list. This is to ensure that the list does not grow particularly large.
+- `RequiredUserProps`: This is an interface which specifies the minimum elements required for each user, such as a username and password
+- `AuthRepo`: This component has a singular function, which is to find a user with a given username. It delegates to the `userRepo`, which can be any object that satisfies the `IUserRepo` interface and returns the user object, and this at a minimum satisfies the `RequiredUserProps`
+- `AuthController`: This brings all the services together, accepting the plaintext username and password, validating the user's password and issuing tokens, and providing a mechanism to refresh and logout the user from their current session.
+
+I seperated many of these components into **service-level** and **controller-level** classes to be compliant with the principle of **Single Responsibility**. The benefit of this is that each of the components are independent of each other's implementation, as long as the interfaces are met. The **AuthController**, in particular, has a generic type `T` while extending the interface `RequiredUserProps` so that it can be used with different user models and interfaces, effectively decoupling these services from the rest of the application. 
 
 ## Optimizations
 
