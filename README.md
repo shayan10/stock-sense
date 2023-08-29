@@ -123,6 +123,12 @@ Here is a summary of the responsibilities of each component:
 
 I seperated many of these components into **service-level** and **controller-level** classes to be compliant with the principle of **Single Responsibility**. The benefit of this is that each of the components are independent of each other's implementation, as long as the interfaces are met. The **AuthController**, in particular, has a generic type `T` while extending the interface `RequiredUserProps` so that it can be used with different user models and interfaces, effectively decoupling these services from the rest of the application. 
 
+For more details on how the authentication service works, [click here]().
+
+### Plaid Services
+
+
+
 ## Optimizations
 
 ### Reduced the time complexity of inserting user transactions into the Database from  ***O(n<sup>3</sup>)*** to ***O(n)*** utilizing HashMaps
