@@ -127,7 +127,16 @@ For more details on how the authentication service works, [click here]().
 
 ### Plaid Services
 
+![Plaid](https://github.com/shayan10/stock-sense/assets/13281021/851aeb25-556f-4f04-8167-0dfb45fd5c8f)
 
+The Plaid Services consist of the following components:
+- `PlaidClient`: This is a wrapper class around the `PlaidAPI` object provided by the official Plaid library, returning the object with the assigned `PLAID_CLIENT_ID` and `PLAID_SECRET_KEY`
+- `PlaidService`: Responsible for retrieving Plaid credentials such as Link and Access Tokens, as well as retrieving raw user investment data (including accounts, securities, holdings..)
+- `PlaidRouter`: This is the front-facing `HTTP` interface for users to interact with, allowing them to make requests including but not limited to:
+  	- Request a link token
+  	- Exchanging their link tokens for access tokens, allowing StockSense to retrieve their information
+- `HoldingAdapter` and `AccountAdapter`: Responsible for transforming the raw account and holding retrieved by Plaid to be consistent with the database schema defined [here](#db-schema)
+- `AccountRepo` and `HoldingRepo`: Responsible for any database-related operations concerning the `Accounts` and `Holdings` tables such as insertion, retrieval, etc. 
 
 ## Optimizations
 
