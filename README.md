@@ -6,7 +6,7 @@
 - [Screenshots](#screenshots)
 - [Usage](#usage)
 - [Architecture](#architecture)
-- Challenges (#challenges)
+- [Challenges](#challenges)
 - [Limitations](#limitations)
 - [Future Improvements](#future-improvements)
 
@@ -110,6 +110,8 @@ Server started on port 3000
 The application was primarily seperated into authentication and Plaid-related services, with the authentication service responsible for managing user credentials such as passwords and issuing tokens, while the Plaid services primarily worked to retrieve user data and store in the PostgreSQL database for further processing.
 
 ### Authentication Service
+
+![Authentication](https://github.com/shayan10/stock-sense/assets/13281021/6f4f9103-b66a-47d9-be9c-8036f29d1a3d)
 
 Here is a summary of the responsibilities of each component:
 
