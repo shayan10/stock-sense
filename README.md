@@ -313,6 +313,8 @@ This allows for highly-efficient O(1) time retrieval in allow rows of the table,
 
 #### Solution: Utilziing SQL aggregates to efficiently compute the total position size (quantity x cost basis) for each distinct holding. SQL is able to perform these operations far more efficiently, and reduces the computations done on the client-side.
 
+TODO: Add the output from the query and then show what the pseudocode
+
 Here is the SQL query I implemented to achieve this:
 
 ```sql
