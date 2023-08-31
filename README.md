@@ -302,7 +302,7 @@ Database => Node.js API => Redis Cache => User
 ```
 This allows for highly-efficient O(1) time retrieval in allow rows of the table, minimizing server load and network requests from the client-side.
 
-![QuoteContextdrawio](https://github.com/shayan10/stock-sense/assets/13281021/a80e5ffd-9e13-46b8-94a3-d9cefdfc23ab)
+![QuoteContextdrawio drawio](https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276)
 
 ### Precomputed the total position size (cost basis x quantity) for each ticker symbol to efficiently compute the % change (current and total)
 
