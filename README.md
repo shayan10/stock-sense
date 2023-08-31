@@ -111,7 +111,7 @@ The application was primarily seperated into authentication and Plaid-related se
 
 ### Authentication Service
 
-![Authentication](https://github.com/shayan10/stock-sense/assets/13281021/6f4f9103-b66a-47d9-be9c-8036f29d1a3d)
+![Authentication](https://github.com/shayan10/stock-sense/assets/13281021/26c77c92-4844-4af8-8814-e81c40c5716f)
 
 Here is a summary of the responsibilities of each component:
 
@@ -127,7 +127,8 @@ For more details on how the authentication service works, [click here]().
 
 ### Plaid Services
 
-![Plaid](https://github.com/shayan10/stock-sense/assets/13281021/851aeb25-556f-4f04-8167-0dfb45fd5c8f)
+![Plaid](https://github.com/shayan10/stock-sense/assets/13281021/05735e30-06c5-45b8-a9cc-b406365058ab)
+
 
 The Plaid Services consist of the following components:
 - `PlaidClient`: This is a wrapper class around the `PlaidAPI` object provided by the official Plaid library, returning the object with the assigned `PLAID_CLIENT_ID` and `PLAID_SECRET_KEY`
