@@ -147,6 +147,7 @@ The Plaid Services consist of the following components:
 
 #### Solution: Each holding also consists of a unique account ID and security ID, this insertion can be simplified to **O(n)** time by utilizing hash maps. 
 
+This is an example of the raw investment data retuned from Plaid: 
 ```json
 {
   "accounts": [
@@ -182,6 +183,8 @@ The Plaid Services consist of the following components:
     }
   ]
 }
+
+TODO: Replace with flowchart
 ```
 Here is the pseudocode implementation of this idea. To see the TypeScript implementation, click [here](https://github.com/shayan10/stock-sense/blob/main/server/src/services/plaid/adapters/HoldingsAdapter.ts).
 
