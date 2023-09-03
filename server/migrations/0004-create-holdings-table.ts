@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { MigrationBuilder, ColumnDefinitions } from "node-pg-migrate";
+import { Kysely, sql } from "kysely";
 
-export const shorthands: ColumnDefinitions | undefined = undefined;
-
-export async function up(pgm: MigrationBuilder): Promise<void> {
-	pgm.sql(`
+export async function up(db: Kysely<any>): Promise<void> {
+	await sql`
 		CREATE TABLE holdings (
 			id SERIAL PRIMARY KEY,
 			user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
@@ -14,9 +12,9 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 			quantity REAL NOT NULL,
 			cost_basis REAL NOT NULL
 		);
-	`);
+	`.execute(db);
 }
 
-export async function down(pgm: MigrationBuilder): Promise<void> {
-	pgm.sql(`DROP TABLE holdings;`);
+export async function down(db: Kysely<any>): Promise<void> {
+	await sql`DROP TABLE holdings;`.execute(db);
 }

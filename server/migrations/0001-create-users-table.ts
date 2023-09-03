@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
+import { Kysely, sql } from "kysely";
 
-export const shorthands: ColumnDefinitions | undefined = undefined;
-
-export async function up(pgm: MigrationBuilder): Promise<void> {
-  await pgm.sql(`
+export async function up(db: Kysely<any>): Promise<void> {
+   await sql`
      CREATE TABLE users (
           id SERIAL PRIMARY KEY,
           username VARCHAR NOT NULL,
@@ -13,9 +11,9 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
           last_name VARCHAR(20) NOT NULL,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
      );
-  `);
+	`.execute(db);
 }
 
-export async function down(pgm: MigrationBuilder): Promise<void> {
-  await pgm.sql('DROP TABLE users');
+export async function down(db: Kysely<any>): Promise<void> {
+     await sql`DROP TABLE users;`.execute(db);
 }

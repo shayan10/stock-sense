@@ -7,10 +7,9 @@
     "build": "tsc -p .",
     "start": "NODE_PATH=./build node build/index.js",
     "dev": "nodemon",
-    "migrate:create": "ts-node node_modules/.bin/node-pg-migrate create -j ts",
-    "migrate:up": "ts-node node_modules/.bin/node-pg-migrate -j ts up",
-    "migrate:down": "ts-node node_modules/.bin/node-pg-migrate down -j ts",
-    "migrate:reset": "ts-node node_modules/.bin/node-pg-migrate reset -j ts",
+    "migrate:up": "ts-node src/db/migrationScripts/migrateToLatest.ts",
+    "migrate:down": "ts-node src/db/migrationScripts/migrateDownFile.ts",
+    "migrate:down_all": "ts-node src/db/migrationScripts/migrateDownAll.ts",
     "generate:types": "kysely-codegen",
     "test": "npx jest"
   },

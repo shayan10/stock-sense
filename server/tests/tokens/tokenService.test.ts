@@ -114,7 +114,7 @@ describe("Token Refresh", () => {
 	});
 
 	it("Does not refresh with invalid refresh token", async () => {
-		const tokens = tokenService.getTokens(user.id.toString());
+		const tokens = await tokenService.getTokens(user.id.toString());
 
 		try {
 			await tokenService.refresh(tokens.accessToken);
