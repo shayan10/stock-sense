@@ -6,6 +6,7 @@
 - [Screenshots](#screenshots)
 - [Usage](#usage)
 - [Architecture](#architecture)
+- [Optimizations](#optimizations)
 - [Challenges](#challenges)
 - [Limitations](#limitations)
 - [Future Improvements](#future-improvements)
@@ -141,26 +142,22 @@ The Plaid Services consist of the following components:
 
 ## Optimizations
 
-### Reduced the time complexity of inserting user transactions into the Database from  ***O(n<sup>3</sup>)*** to ***O(n)*** utilizing HashMaps
+### Reduced the time complexity of inserting user investments into the Database from  ***O(n<sup>3</sup>)*** to ***O(n)*** utilizing HashMaps
 
-#### Problem: Each investment a user has belongs to an account, has some quantity and cost basis, and is a type of security. With this information located in three separate arrays, the naive implementation of inserting these into the SQL Database was **O(n<sup>3</sup>)**. 
+### Problem
 
-#### Solution: Each holding also consists of a unique account ID and security ID, this insertion can be simplified to **O(n)** time by utilizing hash maps. 
+Every holding in the user's investment account has some security and it belongs to a account. Before inserting the holding into the database, we first need to persist the account and security information in our database. The problem, however, is that the Plaid raw data only makes available the `plaid_security_id` and the `plaid_account_id`,
+which offers no way accounts to holdings in the database.
 
-This is an example of the raw investment data retuned from Plaid: 
+Here is an example of the raw responses from Plaid:
+
 ```json
 {
   "accounts": [
     {
       "account_id": "5Bvpj4QknlhVWk7GygpwfVKdd133GoCxB814g",
-      "balances": {
-        ...
-      },
-      "name": "Plaid Brokerage",
-      "official_name": "Plaid Brokerage",
-      "subtype": "brokerage",
-      "type": "investment"
-    },
+      "name": "Plaid Brokerage"
+     },
   ],
   "holdings": [
     {
@@ -172,90 +169,58 @@ This is an example of the raw investment data retuned from Plaid:
   ],
   "securities": [
     {
-      ...
       "iso_currency_code": "USD",
       "name": "Amazon Inc.",
-      "proxy_security_id": null,
       "security_id": "d6ePmbPxgWCWmMVv66q9iPV94n91vMtov5Are",
-      "sedol": null,
-      "ticker_symbol": "AMZN",
-      "type": "equity"
+      "ticker_symbol": "AMZN"
     }
   ]
 }
-
-TODO: Replace with flowchart
 ```
-Here is the pseudocode implementation of this idea. To see the TypeScript implementation, click [here](https://github.com/shayan10/stock-sense/blob/main/server/src/services/plaid/adapters/HoldingsAdapter.ts).
+### Solution
+
+#### Inefficient Way:
+Use three for-loops to iterate insert each holding, but this would have a worse-case runtime of ***O(n<sup>3</sup>)***, which is terribly inefficient. 
+
+Here is the pseudocode implementation of this process: 
+```
+	for every acc in accounts:
+		acc_id = db.insert(acc)
+		for every sec in security:
+			sec_id = db.insert(sec)
+			for every h in holding:
+				db.insert(h, account=acc_id, security=sec_id)
+```
+
+This process can be significantly optimized to **O(n)** by taking advantage of the fact that the `account_id` and `security_id` values are unique, and two accounts or securities cannot share the same id. To do this, I created two maps, an `accountMap` and a `securityMap`. Here is a breakdown of this process:
+
+1) Create the `securityMap`, where the unique `security_id` serves as the key, and the `ticker_symbol` serves as the value:
+
+*NOTE*: The security is not stored in it's own database table, and since the ticker symbols for equities are generally unique, we only need to keep track of the ticker for every user holding.
 
 ```
-    method parseAccountData(data: Accounts[]): AccountPayload
-        accounts := new array of AccountPayload
-        for each account in data
-            if account.account_id and account.name
-                accounts.push({
-                    plaid_account_id: account.account_id,
-                    account_name: account.name
-                })
-            end if
-        end for
-        return accounts
-    end method
-
-    method saveAccounts(user_id: string, data: array of AccountBase): AccountMap
-        parsedAccounts := parseAccountData(data)
-        result := accountRepo.insert(parseInt(user_id), parsedAccounts)
-
-        map := new AccountMap
-        for each obj in result
-            map.set(obj.plaid_account_id, obj.id)
-        end for
-
-        return map
-    end method
-
-    method parseSecurities(securities: Security[]): SecurityMap
-        map := new SecurityMap
-        for each security in securities
-           map.set(security.security_id, security.ticker_symbol) 
-        end for
-        return map
-    end method
-
-    method parseHoldings(data: Holding[], securityMap: SecurityMap, accountMap: AccountMap): HoldingPayload[]
-        holdings = []
-        for each holding in data
-            // Get Account ID using the Map
-            account_id := accountMap.get(holding.account_id)
-            // Get Ticker Symbol using the Map
-            ticker_symbol := securityMap.get(holding.security_id)
-            // If properties defined, then add to array
-            if account_id and ticker_symbol and holding.quantity and holding.cost_basis
-                holdings.push({
-                    account_id,
-                    plaid_account_id: holding.account_id,
-                    ticker_symbol,
-                    cost_basis: holding.cost_basis,
-                    quantity: holding.quantity
-                })
-            end if
-        end for
-        return holdings
-    end method
-
-
-    method saveHoldings(user_id: string, holdings: Holding[], securities: Security[], accountMap: AccountMap)
-        securityMap := parseSecurities(securities)
-        parsedHoldings := parseHoldings(holdings, securityMap, accountMap)
-
-        if parsedHoldings.length == 0
-            return []
-        end if
-	      // Insert into Database
-        result := insert(parseInt(user_id), parsedHoldings)
-        return result
-    end method
+	securityMap = {}
+	for every sec in security:
+		securityMap[sec.security_id] = sec.ticker_symbol 
 ```
+
+2) Create the `accountMap`, where the `account_id` is the key and the database ID of the account is the value:
+
+```
+	accountMap = {}
+	for every acc in account:
+		acc_id = db.insert(acc)
+		accountMap[acc.account_id] = acc_id
+```
+
+3) Combine these two maps to insert the holding into the database:
+
+```
+	for every h in holdings:
+		db.insert(h, ticker_symbol=securityMap[h.security_id, account=accountMap[h.account_id])
+```
+
+This way, I was able to reduce the time-complexity of the insertion operations for new users when importing their new investments into the app for the first time, ultimately creating a seamless user experience. 
 
 ### Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
 
