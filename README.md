@@ -13,7 +13,7 @@
 
 ## Overview
 
-StockSense is an application that allows users to integrate their investment accounts and track their portfolio performance in real-time. Some of the key features include:
+Users often have their investments spread across numerous their brokerage, 401k, Roth IRA, and other retirement accounts. It can be tedious to keep track of these investments and get a comprehensive view of their market performance. I wanted to use my skills in designing REST APIs and API integration to build a robust and secure application which allows users to keep track of their holdings across all their accounts. Here are some of the key features include:
 
 - **Plaid Link Integration:** The application uses the Plaid Link API for secure authentication and retrieval of user's financial holdings, including details such as ticker symbols, quantities, and cost basis.
 
@@ -21,7 +21,7 @@ StockSense is an application that allows users to integrate their investment acc
 
 - **Real-Time Candlestick Visualizations:** Powered by the JP Morgan Perspective Framework, StockSense renders minute-by-minute candlestick charts. These candles are aggregated in real-time during trading hours.
 
-- **Access/Refresh Token Authentication:** The application employs JWTs and a Token Blacklist approach using Redis for robust access and refresh token-based authentication. Learn more about the Authentication Service [here](link_to_authentication_service_documentation).
+- **Access/Refresh Token Authentication:** The application employs JWTs and a Token Blacklist approach using Redis for robust access and refresh token-based authentication. Learn more about the Authentication Service [here](https://github.com/shayan10/stock-sense/tree/main/server/src/services/authentication).
 
 **Technologies Used:** TypeScript, Node.js, React.js, Socket.IO, WebSockets, PostgreSQL, Redis, Kysely, Jest.
 
