@@ -50,7 +50,7 @@ Include screenshots or GIFs showcasing the user interface or different aspects o
   npm install
 ```
 
-2. Create a `.env` file with the following information. The `DATABASE_URL` variable is required locally for the `node-pg-migrate` module.
+2. Create a `.env` file with the following information.
 
 Here is an example template of the `.env` file: 
 
@@ -60,7 +60,6 @@ Here is an example template of the `.env` file:
   POSTGRES_USER=johndoe
   POSTGRES_PASSWORD=helloWorld
   POSTGRES_PORT=5432
-  DATABASE_URL=postgres://POSTGRES_USER:POSTGRES_PASSWORD@localhost/POSTGRES_DB
   JWT_SECRET=example-key
   PORT=3000
   PLAID_CLIENT_ID=example-key
@@ -232,9 +231,12 @@ Example Table Layout:
 | XYZ           | 50   | $800       | $750          | -6%                | -$50               | -6.25%          | -$50            |
 
 
-#### Problem: Each user may have multiple holdings and several investment accounts, with holdings being repeated across accounts. If a user has 255 individual holdings but only 20 stocks, it would be inefficient to make 225 network requests, not to mention the computations for the current and total profit for each stock. 
+#### Problem
 
-#### Solution: To minimize network requests and server load to the API, I consolidated the price retrival from Finnhub into one request. Here's how it works.
+Each user may have multiple holdings and several investment accounts, with holdings being repeated across accounts. If a user has 255 individual holdings but only 20 stocks, it would be inefficient to make 225 network requests, not to mention the computations for the current and total profit for each stock. 
+
+#### Solution
+To minimize network requests and server load to the API, I consolidated the price retrival from Finnhub into one request. Here's how it works.
 1) Database gives the list of distinct stocks owned by the user
 2) Node.js API makes a request to Finnhub for stock information
 3) This data is temporarily cached in Redis in case many users own the same stock (likely with S&P500, GOOGL, APPL etc.)
@@ -274,80 +276,53 @@ This allows for highly-efficient O(1) time retrieval in allow rows of the table,
 
 ### Precomputed the total position size (cost basis x quantity) for each ticker symbol to efficiently compute the % change (current and total)
 
-#### Problem: A prior implementation involved traversing all the rowa across all account tables and adding up the the current price and cost basis, with the price data map from `QuoteContext` being used to compute the % change (current and total). However, this algorithm has an O(n) worst-case runtime.
+#### Problem
 
-#### Solution: Utilziing SQL aggregates to efficiently compute the total position size (quantity x cost basis) for each distinct holding. SQL is able to perform these operations far more efficiently, and reduces the computations done on the client-side.
+For users to effectively monitor the performance of their investments, a key feature is to know how their investments have performed for the current day and overall. The initial implementation involved going over all rows in the account tables and adding up the the current price and cost basis to compute the % change (current and total). However, this algorithm has an **O(n)** worst-case runtime, with n > `the the number of stocks`, since stocks can be repeated across accounts. 
 
-TODO: Add the output from the query and then show what the pseudocode
+#### Solution
 
-Here is the SQL query I implemented to achieve this:
+Upon testing, the initial approach led to an increase in render times on the client-side, leading to a less than ideal user experience. The solution was to use SQL aggregates to efficiently compute the total position size (quantity x cost basis) for each distinct holding on the server-side. SQL is able to perform these operations far more efficiently, and reduces the amount of work that needs to be done on the client-side. 
+
+To calculate the total % change (overall and total), we have to do the following calculations:
 
 ```sql
 SELECT ticker_symbol, SUM(quantity) as total_quantity, SUM(quantity*cost_basis) AS position_size FROM holdings WHERE user_id=${user_id} GROUP BY ticker_symbol;
 ```
+
+Here is the example output of this query:
+
+```json
+[
+  {
+    "ticker_symbol": "AAPL",
+    "position_size": 1000,
+    "positon_cost": 15000.0
+  },
+  {
+    "ticker_symbol": "GOOG",
+    "position_size": 500,
+    "positon_cost": 250000.0
+  },
+  {
+    "ticker_symbol": "MSFT",
+    "position_size": 800,
+    "positon_cost": 32000.0
+  },
+  {
+    "ticker_symbol": "AMZN",
+    "position_size": 600,
+    "positon_cost": 180000.0
+  }
+]
+
+```
+
 This query allows for the computation of the position size and total quantity for each stock owned by the user. Since these are grouped by the ticker symbol (which are unique across U.S. exhanges such as NYSE, NASDAQ etc.), the database is efficiently able to compute these metrics. These results are filtered out by the `user_id` to ensure only the data relevant to the user is being returned.
 
 This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock, which is quite a smaller list!
 
-```typescript
-export type Position = {
-	ticker_symbol: string,
-	position_size: number,	// OR total quantity
-	position_cost: number	// cost_basis x quantity
-}
-
-// Data Required for each stock
-export type PriceData = {
-	open: number;
-	current_price: number,
-	previous_close: number,
-	current_percent_change: number,
-	timestamp: string;
-	low: number;
-	high: number;
-}
-
-// Hash Map for {ticker_symbol: Data}
-
-export type Quote = {[key: string]: PriceData}
-
-export const getTotalChange = (
-	quotes: Quote,
-	positions: Position[]
-): number => {
-	let newTotal = 0;
-	let costBasis = 0;
-	let quote: PriceData;
-
-	positions.forEach((position) => {
-		quote = quotes[position.ticker_symbol];
-		newTotal += quote.current_price * position.position_size;
-		costBasis += position.position_cost;
-	});
-
-	if (costBasis === 0) {
-		return 0; // Avoid division by zero
-	}
-
-	return parseFloat((((newTotal - costBasis) / costBasis) * 100).toFixed(2));
-};
-
-export const getCurrentChange = (
-	quotes: Quote,
-	positions: Position[]
-): number => {
-	let change = 0;
-	let quote: PriceData;
-	positions.forEach((position) => {
-		quote = quotes[position.ticker_symbol];
-		change += quote.current_percent_change;
-	});
-
-	return parseFloat(change.toFixed(2));
-};
-
-```
-Link to the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
+To take a look at how this was integrated on the client-side, have a look at the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
 ## Challenges
 
