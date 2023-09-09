@@ -219,7 +219,8 @@ This process can be significantly optimized to **O(n)** by taking advantage of t
 		db.insert(h, ticker_symbol=securityMap[h.security_id, account=accountMap[h.account_id])
 ```
 
-Result: significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
+#### Result
+Significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
 
 ### Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
 
@@ -270,7 +271,8 @@ Database => Node.js API => Redis Cache => User
 4) Response              |
    => JSON formatted data|
 ```
-**Result**: highly-efficient O(1) time price retrieval in all rows of the table, minimizing server load and network requests from the client-side.
+#### Result
+Highly-efficient O(1) time price retrieval in all rows of the table, minimizing server load and network requests from the client-side.
 
 ![QuoteContextdrawio drawio](https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276)
 
@@ -320,7 +322,8 @@ Here is the example output of this query:
 
 This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock and take the difference.
 
-**Result**: Greatly reduced render times for client dashboard after moving the bulk of these computations to the server-side.
+#### Result
+Greatly reduced render times for client dashboard after moving the bulk of these computations to the server-side.
 
 To take a look at how this was integrated on the client-side, have a look at the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
