@@ -127,7 +127,7 @@ For more details on how the authentication service works, [click here]().
 
 ### Plaid Services
 
-![Plaid](https://github.com/shayan10/stock-sense/assets/13281021/05735e30-06c5-45b8-a9cc-b406365058ab)
+![image](https://github.com/shayan10/stock-sense/assets/13281021/be1b1e68-b246-4296-a1f6-c3d760cf600f)
 
 
 The Plaid Services consist of the following components:
