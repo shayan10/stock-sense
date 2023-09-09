@@ -244,15 +244,15 @@ To minimize network requests and server load to the API, I consolidated the pric
 4) Is returned the user in the following format:
    ```json
    [
-	"ticker_symbol": {
-		"open": 12.75,
-		"current_price": 13.69,
-		"previous_close": 12.59,
-		"current_percent_change": 0.43,
-		"timestamp": "2023-08-27T14:30:00.000Z",
-		"low": 13.0,
-		"high": 13.4
-	}
+		"ticker_symbol": {
+			"open": 12.75,
+			"current_price": 13.69,
+			"previous_close": 12.59,
+			"current_percent_change": 0.43,
+			"timestamp": "2023-08-27T14:30:00.000Z",
+			"low": 13.0,
+			"high": 13.4
+		}
    ]
    ```
 
