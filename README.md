@@ -219,7 +219,7 @@ This process can be significantly optimized to **O(n)** by taking advantage of t
 		db.insert(h, ticker_symbol=securityMap[h.security_id, account=accountMap[h.account_id])
 ```
 
-This way, I was able to reduce the time-complexity of the insertion operations for new users when importing their new investments into the app for the first time, ultimately creating a seamless user experience. 
+Result: significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
 
 ### Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
 
@@ -270,25 +270,25 @@ Database => Node.js API => Redis Cache => User
 4) Response              |
    => JSON formatted data|
 ```
-This allows for highly-efficient O(1) time retrieval in allow rows of the table, minimizing server load and network requests from the client-side.
+**Result**: highly-efficient O(1) time price retrieval in all rows of the table, minimizing server load and network requests from the client-side.
 
 ![QuoteContextdrawio drawio](https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276)
 
 ### Precomputed the total position size (cost basis x quantity) for each ticker symbol to efficiently compute the % change (current and total)
 
 #### Problem
-
-For users to effectively monitor the performance of their investments, a key feature is to know how their investments have performed for the current day and overall. The initial implementation involved going over all rows in the account tables and adding up the the current price and cost basis to compute the % change (current and total). However, this algorithm has an **O(n)** worst-case runtime, with n > `the the number of stocks`, since stocks can be repeated across accounts. 
+To monitor investment performance effectively, users need to track their overall profit/loss (P/L) and daily changes. However, the initial approach involved inefficiently iterating through all account rows, resulting in an O(n) runtime for computing P/L. This was problematic as n could exceed the number of owned stocks, leading to noticeable client-side delays.
 
 #### Solution
-
-Upon testing, the initial approach led to an increase in render times on the client-side, leading to a less than ideal user experience. The solution was to use SQL aggregates to efficiently compute the total position size (quantity x cost basis) for each distinct holding on the server-side. SQL is able to perform these operations far more efficiently, and reduces the amount of work that needs to be done on the client-side. 
-
-To calculate the total % change (overall and total), we have to do the following calculations:
+To optimize P/L calculations, I shifted focus to distinct stocks owned across accounts, typically fewer than individual holdings. I used SQL aggregates to efficiently compute the total shares (position size) and position value (position cost) for each stock. This approach improved performance significantly:
 
 ```sql
 SELECT ticker_symbol, SUM(quantity) as total_quantity, SUM(quantity*cost_basis) AS position_size FROM holdings WHERE user_id=${user_id} GROUP BY ticker_symbol;
 ```
+
+TLDR: It selects all the entries in the database for stocks belonging to a user, segments these rows by the ticker symbols, add calculates the total number of shares owned and the total cost of each position.
+
+![image](https://github.com/shayan10/stock-sense/assets/13281021/aece2e94-908b-4507-bb08-01e12083a8d0)
 
 Here is the example output of this query:
 
@@ -318,9 +318,9 @@ Here is the example output of this query:
 
 ```
 
-This query allows for the computation of the position size and total quantity for each stock owned by the user. Since these are grouped by the ticker symbol (which are unique across U.S. exhanges such as NYSE, NASDAQ etc.), the database is efficiently able to compute these metrics. These results are filtered out by the `user_id` to ensure only the data relevant to the user is being returned.
+This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock and take the difference.
 
-This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock, which is quite a smaller list!
+**Result**: Greatly reduced render times for client dashboard after moving the bulk of these computations to the server-side.
 
 To take a look at how this was integrated on the client-side, have a look at the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
