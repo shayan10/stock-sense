@@ -4,7 +4,7 @@ services:
     image: "postgres:9.4"
     restart: always
     env_file:
-      - stack.env
+      - .env
     volumes:
       - ./docker/postgres-data:/var/lib/postgresql/data
     ports:
@@ -30,6 +30,6 @@ services:
       - '3000:3000'
       - '4040:4040'
     env_file:
-      - stack.env
+      - .env
     environment:
       - NODE_ENV=development
