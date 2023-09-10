@@ -23,8 +23,16 @@ Users often have their investments spread across numerous their brokerage, 401k,
 
 - **Access/Refresh Token Authentication:** The application employs JWTs and a Token Blacklist approach using Redis for robust access and refresh token-based authentication.
 
-**Technologies Used:** TypeScript, Node.js, React.js, Socket.IO, WebSockets, PostgreSQL, Redis, Kysely, Jest.
-
+**Technologies Used:**
+- TypeScript
+- Node.js
+- React.js
+- Socket.IO
+- WebSockets
+- PostgreSQL
+- Redis
+- Kysely
+- Jest
 
 ## Screenshots
 
@@ -137,8 +145,6 @@ Here is a summary of the responsibilities of each component:
 
 I seperated many of these components into **service-level** and **controller-level** classes to be compliant with the principle of **Single Responsibility**. The benefit of this is that each of the components are independent of each other's implementation, as long as the interfaces are met. The **AuthController**, in particular, has a generic type `T` while extending the interface `RequiredUserProps` so that it can be used with different user models and interfaces, effectively decoupling these services from the rest of the application. 
 
-For more details on how the authentication service works, [click here]().
-
 ### Plaid Services
 
 ![image](https://github.com/shayan10/stock-sense/assets/13281021/be1b1e68-b246-4296-a1f6-c3d760cf600f)
@@ -155,12 +161,11 @@ The Plaid Services consist of the following components:
 
 ## Optimizations
 
-### Reduced the time complexity of inserting user investments into the Database from  ***O(n<sup>3</sup>)*** to ***O(n)*** utilizing HashMaps
+### Reduced Investment Insertion Time Complexity from ***O(n<sup>3</sup>)*** to ***O(n)*** using HashMaps
 
-### Problem
+### :lady_beetle: Problem
 
-Every holding in the user's investment account has some security and it belongs to a account. Before inserting the holding into the database, we first need to persist the account and security information in our database. The problem, however, is that the Plaid raw data only makes available the `plaid_security_id` and the `plaid_account_id`,
-which offers no way accounts to holdings in the database.
+Persisting user investment holdings in a database is challenging because Plaid's raw data provides only its own generated account and security IDs. To store the holdings accurately, we require the database's assigned account and security IDs.
 
 Here is an example of the raw responses from Plaid:
 
@@ -192,7 +197,7 @@ Here is an example of the raw responses from Plaid:
 ```
 ### Solution
 
-#### Inefficient Way:
+#### :x: Inefficient Way:
 Use three for-loops to iterate insert each holding, but this would have a worse-case runtime of ***O(n<sup>3</sup>)***, which is terribly inefficient. 
 
 Here is the pseudocode implementation of this process: 
@@ -204,13 +209,12 @@ Here is the pseudocode implementation of this process:
 			for every h in holding:
 				db.insert(h, account=acc_id, security=sec_id)
 ```
+#### :white_check_mark:	 Efficient Way:
+This process is optimized to O(n) by utilizing two maps: `accountMap` for database assigned `account_id` and `securityMap` for storing ticker symbols. The Plaid-generated IDs are used as keys since they are unique to each account and security. The `securityMap` does not contain a database-assigned ID since the `ticker_symbol` is a sufficiently unique identifier to keep track of user investments, meaning there is no need for a separate `securities` table in the database. 
 
-This process can be significantly optimized to **O(n)** by taking advantage of the fact that the `account_id` and `security_id` values are unique, and two accounts or securities cannot share the same id. To do this, I created two maps, an `accountMap` and a `securityMap`. Here is a breakdown of this process:
+If you are interested in how this process works specifically, here is a breakdown of my approach: 
 
 1) Create the `securityMap`, where the unique `security_id` serves as the key, and the `ticker_symbol` serves as the value:
-
-*NOTE*: The security is not stored in it's own database table, and since the ticker symbols for equities are generally unique, we only need to keep track of the ticker for every user holding.
-
 ```
 	securityMap = {}
 	for every sec in security:
@@ -233,8 +237,10 @@ This process can be significantly optimized to **O(n)** by taking advantage of t
 		db.insert(h, ticker_symbol=securityMap[h.security_id, account=accountMap[h.account_id])
 ```
 
-#### Result
+### :star: Result:
 Significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
+
+*Note*: To explore the TypeScript implementation of this approach, have a look (here)[https://github.com/shayan10/stock-sense/tree/main/server/src/services/plaid]. 
 
 ### Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
 
@@ -246,16 +252,22 @@ Example Table Layout:
 | XYZ           | 50   | $800       | $750          | -6%                | -$50               | -6.25%          | -$50            |
 
 
-#### Problem
+### :lady_beetle: Problem
 
+The app must calculate and display the P/L (Profit/Loss) for each user's multiple holdings in various investment accounts, including potentially repeated stocks, to help users monitor their performance.
+
+### Solution
+
+#### :x: Inefficient Solution
 Each user may have multiple holdings and several investment accounts, with holdings being repeated across accounts. If a user has 255 individual holdings but only 20 stocks, it would be inefficient to make 225 network requests, not to mention the computations for the current and total profit for each stock. 
 
-#### Solution
+#### :white_check_mark: Effiicent Solution
 To minimize network requests and server load to the API, I consolidated the price retrival from Finnhub into one request. Here's how it works.
 1) Database gives the list of distinct stocks owned by the user
 2) Node.js API makes a request to Finnhub for stock information
 3) This data is temporarily cached in Redis in case many users own the same stock (likely with S&P500, GOOGL, APPL etc.)
 4) Is returned the user in the following format:
+
    ```json
    [
 		"ticker_symbol": {
@@ -271,6 +283,7 @@ To minimize network requests and server load to the API, I consolidated the pric
    ```
 
 This approach is summarized here:
+
 ```
 Database => Node.js API => Redis Cache => User
 
@@ -285,7 +298,7 @@ Database => Node.js API => Redis Cache => User
 4) Response              |
    => JSON formatted data|
 ```
-#### Result
+### :star: Result: 
 Highly-efficient O(1) time price retrieval in all rows of the table, minimizing server load and network requests from the client-side.
 
 ![QuoteContextdrawio drawio](https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276)
@@ -336,7 +349,7 @@ Here is the example output of this query:
 
 This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock and take the difference.
 
-#### Result
+#### :star: Result:
 Greatly reduced render times for client dashboard after moving the bulk of these computations to the server-side.
 
 To take a look at how this was integrated on the client-side, have a look at the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
