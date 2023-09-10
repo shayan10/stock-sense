@@ -8,6 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
+RUN npm install -g kysely-codegen ts-node
 RUN npm install
 
 # Copy the rest of the application code

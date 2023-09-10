@@ -5,11 +5,6 @@ if [ "$NODE_ENV" = "test" ]; then
 else
   export DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
 fi
-echo $POSTGRES_DB
-echo $POSTGRES_HOST
-echo $POSTGRES_PASSWORD
-echo $POSTGRES_USER
-echo $DATABASE_URL
 
 # Run migrations
 npm run migrate:up
