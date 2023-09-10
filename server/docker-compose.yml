@@ -1,4 +1,7 @@
 version: '3'
+volumes:
+  postgres-data:
+
 services:
   postgres:
     image: "postgres:9.4"
@@ -6,7 +9,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./docker/postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
 
@@ -17,7 +20,7 @@ services:
       - '6379:6379'
       
   app:
-    restart: always
+    restart: "no"
     depends_on:
       - postgres
       - redis
@@ -32,4 +35,4 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
