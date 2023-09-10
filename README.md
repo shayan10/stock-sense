@@ -6,13 +6,14 @@
 - [Screenshots](#screenshots)
 - [Usage](#usage)
 - [Architecture](#architecture)
+- [Optimizations](#optimizations)
 - [Challenges](#challenges)
 - [Limitations](#limitations)
 - [Future Improvements](#future-improvements)
 
 ## Overview
 
-StockSense is an application that allows users to integrate their investment accounts and track their portfolio performance in real-time. Some of the key features include:
+Users often have their investments spread across numerous their brokerage, 401k, Roth IRA, and other retirement accounts. It can be tedious to keep track of these investments and get a comprehensive view of their market performance. I wanted to use my skills in designing REST APIs and API integration to build a robust and secure application which allows users to keep track of their holdings across all their accounts. Here are some of the key features include:
 
 - **Plaid Link Integration:** The application uses the Plaid Link API for secure authentication and retrieval of user's financial holdings, including details such as ticker symbols, quantities, and cost basis.
 
@@ -20,14 +21,36 @@ StockSense is an application that allows users to integrate their investment acc
 
 - **Real-Time Candlestick Visualizations:** Powered by the JP Morgan Perspective Framework, StockSense renders minute-by-minute candlestick charts. These candles are aggregated in real-time during trading hours.
 
-- **Access/Refresh Token Authentication:** The application employs JWTs and a Token Blacklist approach using Redis for robust access and refresh token-based authentication. Learn more about the Authentication Service [here](link_to_authentication_service_documentation).
+- **Access/Refresh Token Authentication:** The application employs JWTs and a Token Blacklist approach using Redis for robust access and refresh token-based authentication.
 
-**Technologies Used:** TypeScript, Node.js, React.js, Socket.IO, WebSockets, PostgreSQL, Redis, Kysely, Jest.
-
+**Technologies Used:**
+- TypeScript
+- Node.js
+- React.js
+- Socket.IO
+- WebSockets
+- PostgreSQL
+- Redis
+- Kysely
+- Jest
 
 ## Screenshots
 
-Include screenshots or GIFs showcasing the user interface or different aspects of your project.
+<p align="center">
+	<img width="800" alt="Client Dashboard" src="https://github.com/shayan10/stock-sense/assets/13281021/779fdd8a-3088-4e6b-922c-33203cc5760b">	
+</p>
+<p align="center">Client Dashboard</p>
+
+<p align="center">
+	<img width="800" alt="image" src="https://github.com/shayan10/stock-sense/assets/13281021/f52b9252-4fbb-4b5f-a006-ffe55552b395">
+</p>
+<p align="center">Stock Viewer</p>
+<div align="center">
+	<p align="center">Plaid Link Flow</p>
+	<img width="600" src="https://github.com/shayan10/stock-sense/assets/13281021/531a1548-7d71-4b41-91a6-ffdf87cebbe0"/>
+	<img width="800" src="https://github.com/shayan10/stock-sense/assets/13281021/7fda68e8-427e-4673-aefb-3e4822e65aae"/>
+
+</div>
 
 ## Usage
 
@@ -49,7 +72,7 @@ Include screenshots or GIFs showcasing the user interface or different aspects o
   npm install
 ```
 
-2. Create a `.env` file with the following information. The `DATABASE_URL` variable is required locally for the `node-pg-migrate` module.
+2. Create a `.env` file with the following information.
 
 Here is an example template of the `.env` file: 
 
@@ -59,7 +82,6 @@ Here is an example template of the `.env` file:
   POSTGRES_USER=johndoe
   POSTGRES_PASSWORD=helloWorld
   POSTGRES_PORT=5432
-  DATABASE_URL=postgres://POSTGRES_USER:POSTGRES_PASSWORD@localhost/POSTGRES_DB
   JWT_SECRET=example-key
   PORT=3000
   PLAID_CLIENT_ID=example-key
@@ -111,7 +133,9 @@ The application was primarily seperated into authentication and Plaid-related se
 
 ### Authentication Service
 
-![Authentication](https://github.com/shayan10/stock-sense/assets/13281021/26c77c92-4844-4af8-8814-e81c40c5716f)
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/26c77c92-4844-4af8-8814-e81c40c5716f" />
+</p>
 
 Here is a summary of the responsibilities of each component:
 
@@ -123,12 +147,11 @@ Here is a summary of the responsibilities of each component:
 
 I seperated many of these components into **service-level** and **controller-level** classes to be compliant with the principle of **Single Responsibility**. The benefit of this is that each of the components are independent of each other's implementation, as long as the interfaces are met. The **AuthController**, in particular, has a generic type `T` while extending the interface `RequiredUserProps` so that it can be used with different user models and interfaces, effectively decoupling these services from the rest of the application. 
 
-For more details on how the authentication service works, [click here]().
-
 ### Plaid Services
 
-![Plaid](https://github.com/shayan10/stock-sense/assets/13281021/05735e30-06c5-45b8-a9cc-b406365058ab)
-
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/be1b1e68-b246-4296-a1f6-c3d760cf600f"/>
+</p>
 
 The Plaid Services consist of the following components:
 - `PlaidClient`: This is a wrapper class around the `PlaidAPI` object provided by the official Plaid library, returning the object with the assigned `PLAID_CLIENT_ID` and `PLAID_SECRET_KEY`
@@ -141,26 +164,21 @@ The Plaid Services consist of the following components:
 
 ## Optimizations
 
-### Reduced the time complexity of inserting user transactions into the Database from  ***O(n<sup>3</sup>)*** to ***O(n)*** utilizing HashMaps
+### Reduced Investment Insertion Time Complexity from ***O(n<sup>3</sup>)*** to ***O(n)*** using HashMaps
 
-#### Problem: Each investment a user has belongs to an account, has some quantity and cost basis, and is a type of security. With this information located in three separate arrays, the naive implementation of inserting these into the SQL Database was **O(n<sup>3</sup>)**. 
+### :lady_beetle: Problem
 
-#### Solution: Each holding also consists of a unique account ID and security ID, this insertion can be simplified to **O(n)** time by utilizing hash maps. 
+Persisting user investment holdings in a database is challenging because Plaid's raw data provides only its own generated account and security IDs. To establish this same relationship in the SQL database, we require the database assigned account ID and the ticker symbol associated with each `security_id`.
 
-This is an example of the raw investment data retuned from Plaid: 
+Here is an example of the raw responses from Plaid:
+
 ```json
 {
   "accounts": [
     {
       "account_id": "5Bvpj4QknlhVWk7GygpwfVKdd133GoCxB814g",
-      "balances": {
-        ...
-      },
-      "name": "Plaid Brokerage",
-      "official_name": "Plaid Brokerage",
-      "subtype": "brokerage",
-      "type": "investment"
-    },
+      "name": "Plaid Brokerage"
+     },
   ],
   "holdings": [
     {
@@ -172,90 +190,65 @@ This is an example of the raw investment data retuned from Plaid:
   ],
   "securities": [
     {
-      ...
       "iso_currency_code": "USD",
       "name": "Amazon Inc.",
-      "proxy_security_id": null,
       "security_id": "d6ePmbPxgWCWmMVv66q9iPV94n91vMtov5Are",
-      "sedol": null,
-      "ticker_symbol": "AMZN",
-      "type": "equity"
+      "ticker_symbol": "AMZN"
     }
   ]
 }
-
-TODO: Replace with flowchart
 ```
-Here is the pseudocode implementation of this idea. To see the TypeScript implementation, click [here](https://github.com/shayan10/stock-sense/blob/main/server/src/services/plaid/adapters/HoldingsAdapter.ts).
+### Solution
+
+#### :x: Inefficient Way
+Use three for-loops to iterate insert each holding, but this would have a worse-case runtime of ***O(n<sup>3</sup>)***, which is terribly inefficient. 
+
+Here is the pseudocode implementation of this process: 
+```
+	for every acc in accounts:
+		acc_id = db.insert(acc)
+		for every sec in security:
+			sec_id = db.insert(sec)
+			for every h in holding:
+				db.insert(h, account=acc_id, security=sec_id)
+```
+#### :white_check_mark:	 Efficient Way
+
+Use two hash maps to reduce time-complexity to **O(n)**:
+- `accountMap` to map all the plaid `account_id`'s to database-assigned account ID's
+- `securityMap` to map all plaid `security_id`'s to their ticker symbols.  
+
+*Note*: The `securityMap` does not contain a database-assigned ID since the `ticker_symbol` is a sufficiently unique identifier to keep track of user investments, meaning there is no need for a separate `securities` table in the database.
+
+If you are interested in how this process works specifically, here is a breakdown of my approach: 
+
+1) Create the `securityMap`, where the unique `security_id` serves as the key, and the `ticker_symbol` serves as the value:
+```
+	securityMap = {}
+	for every sec in security:
+		securityMap[sec.security_id] = sec.ticker_symbol 
+```
+
+2) Create the `accountMap`, where the `account_id` is the key and the database ID of the account is the value:
 
 ```
-    method parseAccountData(data: Accounts[]): AccountPayload
-        accounts := new array of AccountPayload
-        for each account in data
-            if account.account_id and account.name
-                accounts.push({
-                    plaid_account_id: account.account_id,
-                    account_name: account.name
-                })
-            end if
-        end for
-        return accounts
-    end method
-
-    method saveAccounts(user_id: string, data: array of AccountBase): AccountMap
-        parsedAccounts := parseAccountData(data)
-        result := accountRepo.insert(parseInt(user_id), parsedAccounts)
-
-        map := new AccountMap
-        for each obj in result
-            map.set(obj.plaid_account_id, obj.id)
-        end for
-
-        return map
-    end method
-
-    method parseSecurities(securities: Security[]): SecurityMap
-        map := new SecurityMap
-        for each security in securities
-           map.set(security.security_id, security.ticker_symbol) 
-        end for
-        return map
-    end method
-
-    method parseHoldings(data: Holding[], securityMap: SecurityMap, accountMap: AccountMap): HoldingPayload[]
-        holdings = []
-        for each holding in data
-            // Get Account ID using the Map
-            account_id := accountMap.get(holding.account_id)
-            // Get Ticker Symbol using the Map
-            ticker_symbol := securityMap.get(holding.security_id)
-            // If properties defined, then add to array
-            if account_id and ticker_symbol and holding.quantity and holding.cost_basis
-                holdings.push({
-                    account_id,
-                    plaid_account_id: holding.account_id,
-                    ticker_symbol,
-                    cost_basis: holding.cost_basis,
-                    quantity: holding.quantity
-                })
-            end if
-        end for
-        return holdings
-    end method
-
-
-    method saveHoldings(user_id: string, holdings: Holding[], securities: Security[], accountMap: AccountMap)
-        securityMap := parseSecurities(securities)
-        parsedHoldings := parseHoldings(holdings, securityMap, accountMap)
-
-        if parsedHoldings.length == 0
-            return []
-        end if
-	      // Insert into Database
-        result := insert(parseInt(user_id), parsedHoldings)
-        return result
-    end method
+	accountMap = {}
+	for every acc in account:
+		acc_id = db.insert(acc)
+		accountMap[acc.account_id] = acc_id
 ```
+
+3) Combine these two maps to insert the holding into the database:
+
+```
+	for every h in holdings:
+		db.insert(h, ticker_symbol=securityMap[h.security_id, account=accountMap[h.account_id])
+```
+
+### :star: Result
+Significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
+
+*Note*: To explore the TypeScript implementation of this approach, have a look [here](https://github.com/shayan10/stock-sense/tree/main/server/src/services/plaid). 
 
 ### Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
 
@@ -267,28 +260,38 @@ Example Table Layout:
 | XYZ           | 50   | $800       | $750          | -6%                | -$50               | -6.25%          | -$50            |
 
 
-#### Problem: Each user may have multiple holdings and several investment accounts, with holdings being repeated across accounts. If a user has 255 individual holdings but only 20 stocks, it would be inefficient to make 225 network requests, not to mention the computations for the current and total profit for each stock. 
+### :lady_beetle: Problem
 
-#### Solution: To minimize network requests and server load to the API, I consolidated the price retrival from Finnhub into one request. Here's how it works.
+The app must calculate and display the P/L (Profit/Loss) for each user's multiple holdings in various investment accounts, including potentially repeated stocks, to help users monitor their performance.
+
+### Solution
+
+#### :x: Inefficient Solution
+Each user may have multiple holdings and several investment accounts, with holdings being repeated across accounts. If a user has 255 individual holdings but only 20 stocks, it would be inefficient to make 225 network requests, not to mention the computations for the current and total profit for each stock. 
+
+#### :white_check_mark: Effiicent Solution
+To minimize network requests and server load to the API, I consolidated the price retrival from Finnhub into one request. Here's how it works.
 1) Database gives the list of distinct stocks owned by the user
 2) Node.js API makes a request to Finnhub for stock information
 3) This data is temporarily cached in Redis in case many users own the same stock (likely with S&P500, GOOGL, APPL etc.)
 4) Is returned the user in the following format:
+
    ```json
    [
-	"ticker_symbol": {
-		"open": 12.75,
-		"current_price": 13.69,
-		"previous_close": 12.59,
-		"current_percent_change": 0.43,
-		"timestamp": "2023-08-27T14:30:00.000Z",
-		"low": 13.0,
-		"high": 13.4
-	}
+		"ticker_symbol": {
+			"open": 12.75,
+			"current_price": 13.69,
+			"previous_close": 12.59,
+			"current_percent_change": 0.43,
+			"timestamp": "2023-08-27T14:30:00.000Z",
+			"low": 13.0,
+			"high": 13.4
+		}
    ]
    ```
 
 This approach is summarized here:
+
 ```
 Database => Node.js API => Redis Cache => User
 
@@ -303,101 +306,82 @@ Database => Node.js API => Redis Cache => User
 4) Response              |
    => JSON formatted data|
 ```
-This allows for highly-efficient O(1) time retrieval in allow rows of the table, minimizing server load and network requests from the client-side.
+### :star: Result: 
+Highly-efficient O(1) time price retrieval in all rows of the table, minimizing server load and network requests from the client-side.
 
-![QuoteContextdrawio drawio](https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276)
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276" />
+</p>
 
-### Precomputed the total position size (cost basis x quantity) for each ticker symbol to efficiently compute the % change (current and total)
+### Precomputed the Total Position Size on the Server-Side to Efficiently Compute the % Change (Current and Total)
 
-#### Problem: A prior implementation involved traversing all the rowa across all account tables and adding up the the current price and cost basis, with the price data map from `QuoteContext` being used to compute the % change (current and total). However, this algorithm has an O(n) worst-case runtime.
+### 🐞 Problem
+To monitor investment performance effectively, users need to track their overall profit/loss (P/L) and daily changes. 
 
-#### Solution: Utilziing SQL aggregates to efficiently compute the total position size (quantity x cost basis) for each distinct holding. SQL is able to perform these operations far more efficiently, and reduces the computations done on the client-side.
+### Solution
 
-TODO: Add the output from the query and then show what the pseudocode
+#### :x: Inefficient Solution
+Iterate through each individual holding across all accounts, resulting in an O(n) runtime for computing P/L. This is problematic since `n` could exceed the number of owned stocks, leading to noticeable client-side delays.
 
-Here is the SQL query I implemented to achieve this:
+#### ✅ Efficient Solution
+Leveraged SQL aggregates to calculate the total shares (position size) and value (position cost) efficiently for distinct stocks across accounts.
+
+Here is the query for this operation:
 
 ```sql
 SELECT ticker_symbol, SUM(quantity) as total_quantity, SUM(quantity*cost_basis) AS position_size FROM holdings WHERE user_id=${user_id} GROUP BY ticker_symbol;
 ```
-This query allows for the computation of the position size and total quantity for each stock owned by the user. Since these are grouped by the ticker symbol (which are unique across U.S. exhanges such as NYSE, NASDAQ etc.), the database is efficiently able to compute these metrics. These results are filtered out by the `user_id` to ensure only the data relevant to the user is being returned.
 
-This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock, which is quite a smaller list!
+TLDR: It selects all the entries in the database for stocks belonging to a user, segments these rows by the ticker symbols, add calculates the total number of shares owned and the total cost of each position.
 
-```typescript
-export type Position = {
-	ticker_symbol: string,
-	position_size: number,	// OR total quantity
-	position_cost: number	// cost_basis x quantity
-}
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/aece2e94-908b-4507-bb08-01e12083a8d0" />
+</p>
 
-// Data Required for each stock
-export type PriceData = {
-	open: number;
-	current_price: number,
-	previous_close: number,
-	current_percent_change: number,
-	timestamp: string;
-	low: number;
-	high: number;
-}
+Here is the example output of this query:
 
-// Hash Map for {ticker_symbol: Data}
-
-export type Quote = {[key: string]: PriceData}
-
-export const getTotalChange = (
-	quotes: Quote,
-	positions: Position[]
-): number => {
-	let newTotal = 0;
-	let costBasis = 0;
-	let quote: PriceData;
-
-	positions.forEach((position) => {
-		quote = quotes[position.ticker_symbol];
-		newTotal += quote.current_price * position.position_size;
-		costBasis += position.position_cost;
-	});
-
-	if (costBasis === 0) {
-		return 0; // Avoid division by zero
-	}
-
-	return parseFloat((((newTotal - costBasis) / costBasis) * 100).toFixed(2));
-};
-
-export const getCurrentChange = (
-	quotes: Quote,
-	positions: Position[]
-): number => {
-	let change = 0;
-	let quote: PriceData;
-	positions.forEach((position) => {
-		quote = quotes[position.ticker_symbol];
-		change += quote.current_percent_change;
-	});
-
-	return parseFloat(change.toFixed(2));
-};
+```json
+[
+  {
+    "ticker_symbol": "AAPL",
+    "position_size": 1000,
+    "positon_cost": 15000.0
+  },
+  {
+    "ticker_symbol": "GOOG",
+    "position_size": 500,
+    "positon_cost": 250000.0
+  },
+  {
+    "ticker_symbol": "MSFT",
+    "position_size": 800,
+    "positon_cost": 32000.0
+  },
+  {
+    "ticker_symbol": "AMZN",
+    "position_size": 600,
+    "positon_cost": 180000.0
+  }
+]
 
 ```
-Link to the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
+
+### :star: Result:
+Greatly reduced render times for client dashboard after moving the bulk of the computations to the server-side.
+
+To take a look at the remaining client-side computations, have a look here: [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
 ## Challenges
+- Designing the authentication service posed a challenge in segmenting it into maintainable components. Deciding responsibilities for each component, like `TokenService` and `TokenBlacklist`, was a struggle. However, adhering to the Single Responsibility Principle led to separating them, enhancing flexibility and code reusability for future projects.
+- As a first-time React user, integrating the client-side authentication flow proved more complex due to issues with the `useEffect` hook causing unexpected loops. This learning experience helped me avoid common React pitfalls in later projects.
 
 ## Limitations
-
-- The Finnhub Free Tier only allows data retrieval for U.S. equities, excluding mutual funds, bonds, and other such assets. Since this data is currently not available, only U.S. stocks are considered
-- While both Plaid and Finnhub return cryptocurrency data, I have found the data returned from Plaid around cryptocurrencies to be incosistent, since it may either be marked as a `cryptocurrency`, `currency`, or `other`, with the `ticker_symbol` returned having varying formats, making it difficult to parse.
+- Plaid's cryptocurrency data returns inconsistencies in labeling and ticker symbol formats, making parsing difficult. Time constraints prevented its inclusion, but enhancing cryptocurrency support is a desired feature.
+- The Finnhub Free Tier offers real-time data only for NASDAQ and NYSE-listed equities. To prioritize real-time visualizations, the app currently accepts equities only. Integrating Finnhub's paid tier would expand support to mutual funds, ETFs, bonds, and cryptocurrencies.
 
 ## Future Improvements
-
-- I would like the ability to have asynchronous updates to a user's portfolio. Plaid does offer this capability and is something I would like to implement in the future. My current working solution is to have a webhook that is triggered whenever there is an update, and this information is then given to a message queue such as **RabbitMQ** to asynchronously update the database.
-- Although mentioned in the limitations, I would like to implement the functionality neccessary to allow users to add cryptocurrencies to their portfolio. Due to time constraints I was not able to implement this feature, but this is one I definitely want to implement.
-## Demo
-
-Provide a link to the live demo of your project if available.
+- Implement asynchronous portfolio updates, leveraging Plaid's capabilities and using a webhook and message queue like **RabbitMQ** for efficient database updates.
+- Enable users to add cryptocurrencies to their portfolios, a feature desired but not implemented due to time constraints, to enhance the app's functionality.
 
 ## Contact
 
