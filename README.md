@@ -133,7 +133,9 @@ The application was primarily seperated into authentication and Plaid-related se
 
 ### Authentication Service
 
-![Authentication](https://github.com/shayan10/stock-sense/assets/13281021/26c77c92-4844-4af8-8814-e81c40c5716f)
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/26c77c92-4844-4af8-8814-e81c40c5716f" />
+</p>
 
 Here is a summary of the responsibilities of each component:
 
@@ -147,8 +149,9 @@ I seperated many of these components into **service-level** and **controller-lev
 
 ### Plaid Services
 
-![image](https://github.com/shayan10/stock-sense/assets/13281021/be1b1e68-b246-4296-a1f6-c3d760cf600f)
-
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/be1b1e68-b246-4296-a1f6-c3d760cf600f"/>
+</p>
 
 The Plaid Services consist of the following components:
 - `PlaidClient`: This is a wrapper class around the `PlaidAPI` object provided by the official Plaid library, returning the object with the assigned `PLAID_CLIENT_ID` and `PLAID_SECRET_KEY`
@@ -165,7 +168,7 @@ The Plaid Services consist of the following components:
 
 ### :lady_beetle: Problem
 
-Persisting user investment holdings in a database is challenging because Plaid's raw data provides only its own generated account and security IDs. To store the holdings accurately, we require the database's assigned account and security IDs.
+Persisting user investment holdings in a database is challenging because Plaid's raw data provides only its own generated account and security IDs. To establish this same relationship in the SQL database, we require the database assigned account ID and the ticker symbol associated with each `security_id`.
 
 Here is an example of the raw responses from Plaid:
 
@@ -197,7 +200,7 @@ Here is an example of the raw responses from Plaid:
 ```
 ### Solution
 
-#### :x: Inefficient Way:
+#### :x: Inefficient Way
 Use three for-loops to iterate insert each holding, but this would have a worse-case runtime of ***O(n<sup>3</sup>)***, which is terribly inefficient. 
 
 Here is the pseudocode implementation of this process: 
@@ -209,8 +212,13 @@ Here is the pseudocode implementation of this process:
 			for every h in holding:
 				db.insert(h, account=acc_id, security=sec_id)
 ```
-#### :white_check_mark:	 Efficient Way:
-This process is optimized to O(n) by utilizing two maps: `accountMap` for database assigned `account_id` and `securityMap` for storing ticker symbols. The Plaid-generated IDs are used as keys since they are unique to each account and security. The `securityMap` does not contain a database-assigned ID since the `ticker_symbol` is a sufficiently unique identifier to keep track of user investments, meaning there is no need for a separate `securities` table in the database. 
+#### :white_check_mark:	 Efficient Way
+
+Use two hash maps to reduce time-complexity to **O(n)**:
+- `accountMap` to map all the plaid `account_id`'s to database-assigned account ID's
+- `securityMap` to map all plaid `security_id`'s to their ticker symbols.  
+
+*Note*: The `securityMap` does not contain a database-assigned ID since the `ticker_symbol` is a sufficiently unique identifier to keep track of user investments, meaning there is no need for a separate `securities` table in the database.
 
 If you are interested in how this process works specifically, here is a breakdown of my approach: 
 
@@ -237,7 +245,7 @@ If you are interested in how this process works specifically, here is a breakdow
 		db.insert(h, ticker_symbol=securityMap[h.security_id, account=accountMap[h.account_id])
 ```
 
-### :star: Result:
+### :star: Result
 Significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
 
 *Note*: To explore the TypeScript implementation of this approach, have a look (here)[https://github.com/shayan10/stock-sense/tree/main/server/src/services/plaid]. 
@@ -301,15 +309,22 @@ Database => Node.js API => Redis Cache => User
 ### :star: Result: 
 Highly-efficient O(1) time price retrieval in all rows of the table, minimizing server load and network requests from the client-side.
 
-![QuoteContextdrawio drawio](https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276)
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/c2d6c214-cf19-4f0d-857c-8672914c5276" />
+</p>
 
-### Precomputed the total position size (cost basis x quantity) for each ticker symbol to efficiently compute the % change (current and total)
+### Precomputed the Total Position Size on the Server-Side to Efficiently Compute the % Change (Current and Total)
 
-#### Problem
-To monitor investment performance effectively, users need to track their overall profit/loss (P/L) and daily changes. However, the initial approach involved inefficiently iterating through all account rows, resulting in an O(n) runtime for computing P/L. This was problematic as n could exceed the number of owned stocks, leading to noticeable client-side delays.
+### 🐞 Problem
+To monitor investment performance effectively, users need to track their overall profit/loss (P/L) and daily changes. 
 
-#### Solution
-To optimize P/L calculations, I shifted focus to distinct stocks owned across accounts, typically fewer than individual holdings. I used SQL aggregates to efficiently compute the total shares (position size) and position value (position cost) for each stock. This approach improved performance significantly:
+### Solution
+
+#### :x: Inefficient Solution
+Iterate through each individual holding across all accounts, resulting in an O(n) runtime for computing P/L. This is problematic since `n` could exceed the number of owned stocks, leading to noticeable client-side delays.
+
+#### ✅ Efficient Solution
+I improved performance by shifting my focus to distinct stocks owned across accounts, which typically have fewer entries than individual holdings. I used SQL aggregates to efficiently calculate the total shares (position size) and position value (position cost) for each stock.
 
 ```sql
 SELECT ticker_symbol, SUM(quantity) as total_quantity, SUM(quantity*cost_basis) AS position_size FROM holdings WHERE user_id=${user_id} GROUP BY ticker_symbol;
@@ -317,7 +332,9 @@ SELECT ticker_symbol, SUM(quantity) as total_quantity, SUM(quantity*cost_basis) 
 
 TLDR: It selects all the entries in the database for stocks belonging to a user, segments these rows by the ticker symbols, add calculates the total number of shares owned and the total cost of each position.
 
-![image](https://github.com/shayan10/stock-sense/assets/13281021/aece2e94-908b-4507-bb08-01e12083a8d0)
+<p align="center">
+	<img src="https://github.com/shayan10/stock-sense/assets/13281021/aece2e94-908b-4507-bb08-01e12083a8d0" />
+</p>
 
 Here is the example output of this query:
 
@@ -349,7 +366,7 @@ Here is the example output of this query:
 
 This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock and take the difference.
 
-#### :star: Result:
+### :star: Result:
 Greatly reduced render times for client dashboard after moving the bulk of these computations to the server-side.
 
 To take a look at how this was integrated on the client-side, have a look at the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
