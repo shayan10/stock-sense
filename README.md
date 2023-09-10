@@ -372,19 +372,17 @@ Greatly reduced render times for client dashboard after moving the bulk of the c
 To take a look at the remaining client-side computations, have a look here: [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
 ## Challenges
-- One of the main challenges was designing the authentication service. Although I had envisioned how this service would come together, segmenting the service into maintainable and loosely-coupled components was a challenge since I had to identify what each component should be responsible for. For example, I struggled for a long time on whether or not to combine the `TokenService` and the `TokenBlacklist` into one component. However, by falling back to the Single Responsibility Principle, I ultimately decided on separating the two since this provided the best flexibility and increased my code's reusability, since I can use this service in future projects even if I switch out the implementations
-- As a first-time React user, integrating the authentication flow on the client-side proved to be more complex than initially thought. React has a mechanism for triggering changes and fetching data through it's `useEffect` hook, which takes in a callback function and a dependency array: `useEffect(callback, [])`. This hook is called whenever an element inside the dependency array changes, and on occasion this ended up trigerring an infinite loop. While this was frustrating to debug, this gave me the learning experience necessary on how to avoid some of the common pitfalls in React, which will undoubtely prove useful in later projects.
+- Designing the authentication service posed a challenge in segmenting it into maintainable components. Deciding responsibilities for each component, like `TokenService` and `TokenBlacklist`, was a struggle. However, adhering to the Single Responsibility Principle led to separating them, enhancing flexibility and code reusability for future projects.
+- As a first-time React user, integrating the client-side authentication flow proved more complex due to issues with the `useEffect` hook causing unexpected loops. This learning experience helped me avoid common React pitfalls in later projects.
 
 ## Limitations
-
-- While both Plaid and Finnhub return cryptocurrency data, I have found the data returned from Plaid around cryptocurrencies to be inconsistent, since it may either be marked as a `cryptocurrency`, `currency`, or `other`, with the `ticker_symbol` returned having varying formats, making it difficult to parse. Although this was not a feature I could include due to time constraints, it is certainly one I want to include to enhance the utility of the app.
-- With the Finnhub Free Tier, it only returned real-time data for equities listed on the NASDAQ and NYSE, and since the real-time visualizations were a key part of the app, I opted to only accept equities for the moment. The integration of the paid-tier from Finnhub, however, would let me visualize additional securities such as mutual funds, ETFs, bonds etc., as well as crytocurrencies.
+- Plaid's cryptocurrency data returns inconsistencies in labeling and ticker symbol formats, making parsing difficult. Time constraints prevented its inclusion, but enhancing cryptocurrency support is a desired feature.
+- The Finnhub Free Tier offers real-time data only for NASDAQ and NYSE-listed equities. To prioritize real-time visualizations, the app currently accepts equities only. Integrating Finnhub's paid tier would expand support to mutual funds, ETFs, bonds, and cryptocurrencies.
 
 ## Future Improvements
+- Implement asynchronous portfolio updates, leveraging Plaid's capabilities and using a webhook and message queue like **RabbitMQ** for efficient database updates.
+- Enable users to add cryptocurrencies to their portfolios, a feature desired but not implemented due to time constraints, to enhance the app's functionality.
 
-- I would like the ability to have asynchronous updates to a user's portfolio. Plaid does offer this capability and is something I would like to implement in the future. My current working solution is to have a webhook that is triggered whenever there is an update, and this information is then given to a message queue such as **RabbitMQ** to asynchronously update the database.
-- Although mentioned in the limitations, I would like to implement the functionality neccessary to allow users to add cryptocurrencies to their portfolio. Due to time constraints I was not able to implement this feature, but this is one I definitely want to implement.
-  
 ## Contact
 
 If you have any questions or feedback, feel free to contact me at [shayankhan28@gmail.com](shayankhan28@gmail.com).
