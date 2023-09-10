@@ -28,7 +28,21 @@ Users often have their investments spread across numerous their brokerage, 401k,
 
 ## Screenshots
 
-Include screenshots or GIFs showcasing the user interface or different aspects of your project.
+<p align="center">
+	<img width="800" alt="Client Dashboard" src="https://github.com/shayan10/stock-sense/assets/13281021/779fdd8a-3088-4e6b-922c-33203cc5760b">	
+</p>
+<p align="center">Client Dashboard</p>
+
+<p align="center">
+	<img width="800" alt="image" src="https://github.com/shayan10/stock-sense/assets/13281021/f52b9252-4fbb-4b5f-a006-ffe55552b395">
+</p>
+<p align="center">Stock Viewer</p>
+<div align="center">
+	<p align="center">Plaid Link Flow</p>
+	<img width="600" src="https://github.com/shayan10/stock-sense/assets/13281021/531a1548-7d71-4b41-91a6-ffdf87cebbe0"/>
+	<img width="800" src="https://github.com/shayan10/stock-sense/assets/13281021/7fda68e8-427e-4673-aefb-3e4822e65aae"/>
+
+</div>
 
 ## Usage
 
