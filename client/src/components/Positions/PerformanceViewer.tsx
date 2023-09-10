@@ -17,7 +17,7 @@ const PerformanceViewer = ({metrics, historicalPrices, ticker_symbol, quantity, 
 					${(quote.current_price*quantity).toFixed(2)}
 				</h5>
 				<div className="position-stats">
-					<p>Cost Basis: ${cost_basis*quantity}</p>
+					<p>Cost Basis: ${(cost_basis*quantity).toFixed(2)}</p>
 					<p>
 						P/L: <span className={quote.current_price - cost_basis > 0 ? "text-success" : "text-danger"}>${((quote.current_price - cost_basis)*quantity).toFixed(2)}</span>
 					</p>

@@ -1,6 +1,6 @@
 export const AccountItem = ({ num, comp }: { num: number, comp?: number }) => {
 	const classNames = `fw-bold ${
-	  num > 0
+	  num > (comp || 0)
 	    ? "text-success"
 	    : num === (comp || 0)
 	    ? "text-secondary"

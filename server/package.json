@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
-    "start": "NODE_PATH=./build node build/index.js",
+    "start": "ts-node --transpile-only src/index.ts",
     "dev": "nodemon",
     "migrate:up": "ts-node src/db/migrationScripts/migrateToLatest.ts",
     "migrate:down": "ts-node src/db/migrationScripts/migrateDownFile.ts",
@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
+    "@types/node-fetch": "^2.6.4",
     "@types/supertest": "^2.0.12",
     "concurrently": "^8.2.0",
     "faker": "^6.6.6",

@@ -1,5 +1,5 @@
 # Use a Node.js base image
-FROM node:14 as base
+FROM node:16 as base
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -13,11 +13,11 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Copy the entrypoint script
-COPY entrypoint.sh /app
+# Make the script executable
+RUN chmod +x entrypoint.sh
 
-# Set the entrypoint script as the entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Expose port 4040 for Socket.io
+EXPOSE 4040
 
-# Run the command to start your application
-CMD ["npm", "run", "test"]
+# Set the custom script as the CMD instruction
+CMD ["./wait-for-it.sh", "postgres:5432", "--", "./wait-for-it.sh", "redis:6379", "--", "./entrypoint.sh"]

@@ -1,6 +1,6 @@
 import axios from "axios";
 import yahooFinance from "yahoo-finance2";
-import { DateTime, IANAZone } from "luxon";
+import { DateTime, IANAZone  } from "luxon";
 import _ from "lodash";
 
 import { redisClient } from "../db/Redis";
@@ -235,10 +235,10 @@ class StockDataFetcher {
 					second: 0,
 					millisecond: 0,
 				});
-			}
+			};
 
 			const response = await axios.get(
-				`https://finnhub.io/api/v1/stock/candle?symbol=${ticker_symbol}&resolution=15&from=${startDate.toSeconds()}&to=${endDate.toSeconds()}`,
+				`https://finnhub.io/api/v1/stock/candle?symbol=${ticker_symbol}&resolution=5&from=${startDate.toUnixInteger()}&to=${endDate.toUnixInteger()}`,
 				{
 					headers: {
 						"X-Finnhub-Token": this.API_KEY,
@@ -248,7 +248,7 @@ class StockDataFetcher {
 
 			const data = response.data as RawCandle;
 
-			if (data.s !== "ok") {
+			if (data.s != "ok") {
 				return [];
 			}
 

@@ -9,8 +9,27 @@ services:
       - ./docker/postgres-data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
+
   redis:
     image: "redis:alpine"
     restart: always
     ports:
       - '6379:6379'
+      
+  app:
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - '3000:3000'
+      - '4040:4040'
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development

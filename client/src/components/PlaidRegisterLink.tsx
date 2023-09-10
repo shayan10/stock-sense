@@ -98,15 +98,16 @@ const PlaidRegisterLink = ({
 		<>
 			<p className="text-center">
 				Looks like you have not registered with Plaid yet.
+			</p>
+			<div className="d-flex justify-content-center">	
 				<button
 					disabled={!ready && errorMsg !== ""}
 					onClick={(e) => open()}
-					className="text-decoration-underline"
-					style={{ color: "blue" }}
+					className="btn btn-primary text-center"
 				>
 					Click here to start the process
 				</button>
-			</p>
+			</div>
 		</>
 	);
 };

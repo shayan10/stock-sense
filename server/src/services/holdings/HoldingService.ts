@@ -70,7 +70,7 @@ class HoldingService {
 			throw new BaseError(
 				"Holding not found",
 				"not_found",
-				"No holdign was found with the given id",
+				"No holding was found with the given id",
 				404
 			);
 		}

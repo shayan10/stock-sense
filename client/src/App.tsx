@@ -4,7 +4,6 @@ import Dashboard from "./components/Dashboard";
 import RequireAuth from "./components/RequireAuth";
 import HoldingDetail from "./components/Positions/HoldingDetail";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import ErrorPage from "./components/ErrorPage";
 import Register from "./components/Register";
 
 function App() {
@@ -13,10 +12,9 @@ function App() {
 			<Route path="/login" element={<Login />} />
 			<Route path="/register" element={<Register />} />
 			<Route element={<RequireAuth />}>
-				<Route path="/dashboard" element={<Dashboard />} />
+				<Route path="/" element={<Dashboard />} />
 				<Route path="/holdings/:id" Component={HoldingDetail} />
 			</Route>
-			<Route path="/" element={<ErrorPage />} />
 		</Routes>
 	);
 }

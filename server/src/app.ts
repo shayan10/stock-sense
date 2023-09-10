@@ -18,7 +18,7 @@ export const finnhubWS = new WebSocket(
 
 export const io = new Server({
 	cors: {
-		origin: "http://localhost:3001",
+		origin: "https://stocksense.shayankhan.dev",
 	},
 });
 
@@ -91,7 +91,7 @@ export const app = () => {
 	_app.use(
 		cors({
 			credentials: true,
-			origin: "http://localhost:3001",
+			origin: "https://stocksense.shayankhan.dev",
 		})
 	);
 

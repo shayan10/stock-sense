@@ -20,7 +20,7 @@ const Login = () => {
 
 			const { accessToken } = response.data as { accessToken: string };
 			saveToken(accessToken);
-			navigate('/dashboard');
+			navigate('/');
 		} catch (error) {
 			console.log(error);
 			setError("Invalid Credentials Provided");
@@ -30,7 +30,7 @@ const Login = () => {
 	useEffect(() => {
 		// If already authenticated, then redirect to dashboard
 		if (auth.isAuthenticated) {
-			navigate('/dashboard')
+			navigate('/')
 		}
 		// Reset error state
 		setError('');
@@ -68,7 +68,9 @@ const Login = () => {
 					>
 						Submit
 					</button>
-					<p className="text-center mt-3">Need to create an account? <Link to="/register">Sign up now!</Link></p>
+					<p className="text-center mt-3">
+						Need to create an account? <Link to="/register">Sign up now!</Link>
+					</p>
 					{error !== '' && <div className="text-danger">{error}</div>}
 				</form>
 			</div>

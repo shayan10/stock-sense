@@ -1,13 +1,25 @@
-#!/bin/bash
+#!/bin/sh
 
-# Load environment variables from .env file
-set -a
-source .env
-set +a
+if [ "$NODE_ENV" = "test" ]; then
+  export DATABASE_URL=/app/db.sqlite
+else
+  export DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
+fi
+echo $POSTGRES_DB
+echo $POSTGRES_HOST
+echo $POSTGRES_PASSWORD
+echo $POSTGRES_USER
+echo $DATABASE_URL
 
-# Create the DATABASE_URL variable
-export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+# Run migrations
+npm run migrate:up
 
-# Execute the command
-exec "$@"
+# Generate types
+npm run generate:types
 
+# Start the application
+if [ "$NODE_ENV" = "development" ]; then
+  npm run dev
+else
+  npm start
+fi

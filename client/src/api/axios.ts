@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASE_URL: string = "http://localhost:3000";
+const BASE_URL: string = "https://api.stocksense.shayankhan.dev";
 
 export default axios.create({
 	baseURL: BASE_URL,

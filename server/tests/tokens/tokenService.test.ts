@@ -6,46 +6,63 @@ import { tokenService } from "../../src/services/authentication/auth";
 import jwt from "jsonwebtoken";
 import { TokenVerificationError } from "../../src/services/authentication/TokenService";
 import { beforeAll, it, describe, expect } from "@jest/globals";
+import { redisConnect } from "../../src/db/Redis";
+import { connect } from "../../src/db/Postgres";
 
 let userPayload: UserPayload;
 let user: UserResponse;
+
+beforeAll(async () => {
+	try {
+		redisConnect();
+		connect();	
+	} catch (error) {
+		throw error;
+	}
+})
 
 beforeAll(async () => {
 	userPayload = userFactory();
 	const response = await request(app())
 		.post("/users/register")
 		.send(userPayload)
-		.set("Accept", "application/json");
+		.set("Accept", "application/json")
+		
 	expect(response.statusCode).toBe(200);
 	user = response.body;
 });
 
 describe("Token Service", () => {
 	it("Gives back access/refresh token pair", async () => {
-		const tokens = await tokenService.getTokens(user.id.toString());
-		expect(tokens).toEqual(
-			expect.objectContaining({
-				accessToken: expect.any(String),
-				refreshToken: expect.any(String),
-			})
-		);
-		const decodedAccessToken = jwt.decode(tokens.accessToken);
-		expect(decodedAccessToken).toEqual(
-			expect.objectContaining({
-				sub: user.id.toString(),
-				iat: expect.any(Number),
-				exp: expect.any(Number),
-			})
-		);
-
-		const decodedRefreshToken = jwt.decode(tokens.refreshToken);
-		expect(decodedRefreshToken).toEqual(
-			expect.objectContaining({
-				sub: user.id.toString(),
-				iat: expect.any(Number),
-				exp: expect.any(Number),
-			})
-		);
+		try {
+			const tokens = await tokenService.getTokens(user.id.toString());	
+			expect(tokens).toEqual(
+				expect.objectContaining({
+					accessToken: expect.any(String),
+					refreshToken: expect.any(String),
+				})
+			);
+			const decodedAccessToken = jwt.decode(tokens.accessToken);
+			expect(decodedAccessToken).toEqual(
+				expect.objectContaining({
+					sub: user.id.toString(),
+					iat: expect.any(Number),
+					exp: expect.any(Number),
+				})
+			);
+	
+			const decodedRefreshToken = jwt.decode(tokens.refreshToken);
+			expect(decodedRefreshToken).toEqual(
+				expect.objectContaining({
+					sub: user.id.toString(),
+					iat: expect.any(Number),
+					exp: expect.any(Number),
+				})
+			);
+		} catch (error) {
+			throw error;
+		}
+		
 	});
 });
 

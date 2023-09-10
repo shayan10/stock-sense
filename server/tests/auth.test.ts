@@ -1,7 +1,19 @@
 import request from "supertest";
 import { app } from "../src/app";
 import { userFactory } from "./factories/user";
-import { it, describe, expect } from "@jest/globals";
+import { redisConnect } from "../src/db/Redis";
+import { connect } from "../src/db/Postgres";
+import { beforeAll, it, describe, expect } from "@jest/globals";
+
+beforeAll(async () => {
+	try {
+		redisConnect();
+		connect();	
+	} catch (error) {
+		throw error;
+	}
+})
+
 
 describe("POST /users/register", () => {
 	it("returns 200 for properly created user", async () => {
@@ -12,7 +24,6 @@ describe("POST /users/register", () => {
 			.send(userPayload)
 			.set("Accept", "application/json");
 
-		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual(
 			expect.objectContaining({
 				id: expect.any(Number),
@@ -21,6 +32,8 @@ describe("POST /users/register", () => {
 				username: userPayload.username,
 			})
 		);
+		
+		expect(response.statusCode).toBe(200);
 	});
 
 	it("returns 400 for invalid data type", async () => {

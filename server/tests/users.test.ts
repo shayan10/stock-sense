@@ -2,7 +2,18 @@ import request from "supertest";
 import { app } from "../src/app";
 import { userFactory } from "./factories/user";
 import { UserPayload } from "../src/services/users/UserSchema";
+import { redisConnect } from "../src/db/Redis";
+import { connect } from "../src/db/Postgres";
 import { beforeAll, it, describe, expect } from "@jest/globals";
+
+beforeAll(async () => {
+	try {
+		redisConnect();
+		connect();	
+	} catch (error) {
+		throw error;
+	}
+})
 
 describe("GET /users/", () => {
 	it("returns 401 for request without token", async () => {

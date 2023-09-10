@@ -27,7 +27,6 @@ class MigrationRunner {
   }
 
   private outputMigrationResults(results?: MigrationResult[], error?: unknown) {
-    console.log("Running");
     results?.forEach((it) => {
       if (it.status === 'Success') {
         console.log(`migration "${it.migrationName}" was executed successfully`)
@@ -62,4 +61,3 @@ class MigrationRunner {
 const config = createConfig();
 const db = new Kysely<any>(config);
 export const migrationRunner = new MigrationRunner(db, path.join(__dirname, '../../migrations'));
-migrationRunner.migrateToLatest();

@@ -8,7 +8,7 @@ const Navbar = () => {
 	return (
 		<nav className="navbar navbar-expand-lg navbar-dark bg-dark">
 			<div className="container-xl">
-				<Link to="/dashboard" className="navbar-brand">
+				<Link to="/" className="navbar-brand">
 					StockSense
 				</Link>
 				<button
