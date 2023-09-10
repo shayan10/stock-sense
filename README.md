@@ -248,7 +248,7 @@ If you are interested in how this process works specifically, here is a breakdow
 ### :star: Result
 Significantly reduced response times with a O(n) time approach for new users importing their investments into the app, resulting in a seamless user experience.
 
-*Note*: To explore the TypeScript implementation of this approach, have a look (here)[https://github.com/shayan10/stock-sense/tree/main/server/src/services/plaid]. 
+*Note*: To explore the TypeScript implementation of this approach, have a look [here](https://github.com/shayan10/stock-sense/tree/main/server/src/services/plaid). 
 
 ### Modified the client-side price retrival flow to allow for O(1) time lookups for each holding.
 
@@ -324,7 +324,9 @@ To monitor investment performance effectively, users need to track their overall
 Iterate through each individual holding across all accounts, resulting in an O(n) runtime for computing P/L. This is problematic since `n` could exceed the number of owned stocks, leading to noticeable client-side delays.
 
 #### ✅ Efficient Solution
-I improved performance by shifting my focus to distinct stocks owned across accounts, which typically have fewer entries than individual holdings. I used SQL aggregates to efficiently calculate the total shares (position size) and position value (position cost) for each stock.
+Leveraged SQL aggregates to calculate the total shares (position size) and value (position cost) efficiently for distinct stocks across accounts.
+
+Here is the query for this operation:
 
 ```sql
 SELECT ticker_symbol, SUM(quantity) as total_quantity, SUM(quantity*cost_basis) AS position_size FROM holdings WHERE user_id=${user_id} GROUP BY ticker_symbol;
@@ -364,12 +366,10 @@ Here is the example output of this query:
 
 ```
 
-This greatly simplifies the computations on the client side because now, instead of iterating over all the rows from every account, we can simply just iterate over the position metrics returned for each stock and take the difference.
-
 ### :star: Result:
-Greatly reduced render times for client dashboard after moving the bulk of these computations to the server-side.
+Greatly reduced render times for client dashboard after moving the bulk of the computations to the server-side.
 
-To take a look at how this was integrated on the client-side, have a look at the [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
+To take a look at the remaining client-side computations, have a look here: [code](https://github.com/shayan10/stock-sense/blob/main/client/src/services/Quotes.ts).
 
 ## Challenges
 - One of the main challenges was designing the authentication service. Although I had envisioned how this service would come together, segmenting the service into maintainable and loosely-coupled components was a challenge since I had to identify what each component should be responsible for. For example, I struggled for a long time on whether or not to combine the `TokenService` and the `TokenBlacklist` into one component. However, by falling back to the Single Responsibility Principle, I ultimately decided on separating the two since this provided the best flexibility and increased my code's reusability, since I can use this service in future projects even if I switch out the implementations
