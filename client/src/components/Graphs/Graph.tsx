@@ -43,7 +43,7 @@ function fetchLayout() {
 
 const Graph = ({ historicalPrices, ticker_symbol }: HoldingProps) => {
 	const [table, setTable] = useState<Table | undefined>();
-	const socket = io("http://localhost:4040"); // Initialize socket.io connection
+	const socket = io("https://io-stocksense.shayankhan.dev"); // Initialize socket.io connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
 	const [events, setEvents] = useState([]);
 
