@@ -1,5 +1,5 @@
 # Use a Node.js base image
-FROM node:16 as base
+FROM node:18 as base
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -8,6 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
+RUN npm install -g npm
 RUN npm install -g kysely-codegen ts-node
 RUN npm install
 
