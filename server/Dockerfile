@@ -1,10 +1,9 @@
-# Use a Node.js base image
-FROM node:18 as base
+# Stage 1: Install dependencies
+FROM node:18 as dependencies
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
 # Install dependencies
@@ -12,7 +11,13 @@ RUN npm install -g npm
 RUN npm install -g kysely-codegen ts-node
 RUN npm install
 
-# Copy the rest of the application code
+# Stage 2: Build the application
+FROM node:18 as build
+
+WORKDIR /app
+
+# Copy the application code from the previous stage
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
 # Make the script executable
