@@ -29,6 +29,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/app
+      - /app/node_modules
     ports:
       - '3000:3000'
       - '4040:4040'
@@ -36,5 +37,3 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-    volumes:
-      - /app/node_modules
