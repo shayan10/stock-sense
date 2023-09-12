@@ -36,7 +36,8 @@ Users often have their investments spread across numerous their brokerage, 401k,
 - Jest
 
 ## Demo
-If you are interested, you can use a demo version of the app [here](https://stocksense.shayankhan.dev/).
+If you are interested, you can use a demo version of the at:
+https://stocksense.shayankhan.dev/.
 
 ## Screenshots
 
