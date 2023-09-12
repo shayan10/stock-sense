@@ -39,6 +39,12 @@ Users often have their investments spread across numerous their brokerage, 401k,
 If you are interested, you can use a demo version of the at:
 https://stocksense.shayankhan.dev/.
 
+*NOTE*: For best results, enter the following credentials when going through the Plaid flow to access the test account:
+```
+username: custom_user1
+password: <any non-empty password>
+```
+
 ## Screenshots
 
 <p align="center">
