@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Demo](#demo)
 - [Screenshots](#screenshots)
 - [Usage](#usage)
 - [Architecture](#architecture)
@@ -33,6 +34,9 @@ Users often have their investments spread across numerous their brokerage, 401k,
 - Redis
 - Kysely
 - Jest
+
+## Demo
+If you are interested, you can use a demo version of the app [here](https://stocksense.shayankhan.dev/).
 
 ## Screenshots
 
